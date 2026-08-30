@@ -338,7 +338,7 @@ class PaperAgent:
 
         counts = {tier: sum(1 for p in self.state.positions if p.tier == tier) for tier in RISK_TIERS}
 
-        for tier in ("core", "growth", "aggressive"):
+                for tier in ("core", "growth", "aggressive"):
             for entry in results[tier]:
                 ticker = entry["ticker"]
                 if counts[tier] >= RISK_TIERS[tier]["max_positions"]:
@@ -346,6 +346,13 @@ class PaperAgent:
                 price = prices.get(ticker)
                 if price is None:
                     continue
+
+                if ANTHROPIC_API_KEY:
+                    news = check_news_sentiment(ticker, ANTHROPIC_API_KEY)
+                    if news["verdict"] == "negative":
+                        log(f"SKIP {ticker}: negative news flag -- {news['summary']}")
+                        continue
+
                 if self._open(ticker, tier, price, prices):
                     counts[tier] += 1
 
