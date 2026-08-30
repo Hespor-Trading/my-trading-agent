@@ -23,6 +23,7 @@ jobs:
       - name: Run the trading agent (simulated money only)
         env:
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+                    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python paper_agent.py --run
 
       - name: Save today's results
