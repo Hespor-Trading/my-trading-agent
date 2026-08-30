@@ -403,4 +403,4 @@ def show_history(agent: "PaperAgent"):
             print(f"    {tier:<11} no closed trades")
             continue
         wins = [t for t in tt if t.net_pnl > 0]
-        total =
+        total = sum(t.net_pnl for t in tt)
