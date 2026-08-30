@@ -6,81 +6,99 @@
 <title>Paper Trading Dashboard</title>
 <style>
   :root {
-    --bg: #0d1117;
-    --card: #161b22;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --green: #3fb950;
-    --red: #f85149;
-    --blue: #58a6ff;
-    --core: #58a6ff;
-    --growth: #3fb950;
-    --aggressive: #f0883e;
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --border: #e8eaed;
+    --text: #202124;
+    --muted: #5f6368;
+    --green: #1e8e3e;
+    --red: #d93025;
+    --blue: #1a73e8;
+    --core: #1a73e8;
+    --growth: #1e8e3e;
+    --aggressive: #e8710a;
+    --shadow: 0 1px 2px 0 rgba(60,64,67,0.08), 0 1px 3px 1px rgba(60,64,67,0.08);
   }
   * { box-sizing: border-box; }
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     margin: 0;
-    padding: 20px;
-    max-width: 900px;
-    margin: 0 auto;
+    padding: 32px 20px;
     line-height: 1.5;
   }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green);
+  }
   h1 {
-    font-size: 22px;
-    margin: 10px 0 4px 0;
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0;
   }
   .subtitle {
     color: var(--muted);
     font-size: 14px;
-    margin-bottom: 24px;
+    margin: 6px 0 20px 0;
   }
   .banner {
-    background: #1c2128;
-    border: 1px solid var(--border);
+    background: #fff8e1;
+    border: 1px solid #fde293;
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 12px 16px;
     font-size: 13px;
-    color: var(--muted);
+    color: #7a5b00;
     margin-bottom: 24px;
   }
   .hero {
     background: var(--card);
-    border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-bottom: 16px;
     text-align: center;
-  }
-  .hero .value {
-    font-size: 42px;
-    font-weight: 700;
-    margin: 4px 0;
-  }
-  .hero .change {
-    font-size: 18px;
-    font-weight: 600;
   }
   .hero .label {
     color: var(--muted);
     font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 500;
   }
+  .hero .value {
+    font-size: 44px;
+    font-weight: 400;
+    margin: 6px 0;
+    letter-spacing: -0.5px;
+  }
+  .hero .change {
+    font-size: 16px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  .change.positive { background: #e6f4ea; color: var(--green); }
+  .change.negative { background: #fce8e6; color: var(--red); }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
   .metric {
     background: var(--card);
-    border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 14px;
+    box-shadow: var(--shadow);
+    padding: 16px;
   }
   .metric .label {
     color: var(--muted);
@@ -88,39 +106,43 @@
     margin-bottom: 6px;
   }
   .metric .value {
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 19px;
+    font-weight: 500;
   }
   .section-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 28px 0 12px 0;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 32px 0 12px 4px;
+    color: var(--text);
   }
   .tier-card {
     background: var(--card);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
     margin-bottom: 12px;
   }
-  .tier-card.core { border-left-color: var(--core); }
-  .tier-card.growth { border-left-color: var(--growth); }
-  .tier-card.aggressive { border-left-color: var(--aggressive); }
   .tier-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 10px;
+    align-items: center;
+    margin-bottom: 12px;
   }
   .tier-name {
-    font-weight: 700;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 14px;
   }
+  .tier-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .tier-dot.core { background: var(--core); }
+  .tier-dot.growth { background: var(--growth); }
+  .tier-dot.aggressive { background: var(--aggressive); }
   .tier-value {
-    font-size: 15px;
+    font-size: 13px;
     color: var(--muted);
   }
   table {
@@ -132,24 +154,24 @@
     text-align: left;
     color: var(--muted);
     font-weight: 500;
-    padding: 6px 8px;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border);
   }
   td {
-    padding: 6px 8px;
-    border-bottom: 1px solid #21262d;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
   }
-  .positive { color: var(--green); }
-  .negative { color: var(--red); }
+  tr:last-child td { border-bottom: none; }
+  .positive { color: var(--green); font-weight: 500; }
+  .negative { color: var(--red); font-weight: 500; }
   .empty-note {
     color: var(--muted);
     font-size: 13px;
-    font-style: italic;
-    padding: 8px;
+    padding: 4px;
   }
   .loading, .error {
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     color: var(--muted);
   }
   .error { color: var(--red); }
@@ -158,36 +180,38 @@
     color: var(--muted);
     font-size: 12px;
     margin-top: 32px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
   }
   .refresh-btn {
     background: var(--card);
     border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 16px;
-    border-radius: 6px;
+    color: var(--blue);
+    padding: 8px 20px;
+    border-radius: 20px;
     cursor: pointer;
     font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow);
   }
-  .refresh-btn:hover { background: #1c2128; }
+  .refresh-btn:hover { background: #f1f3f4; }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<h1>📊 Paper Trading Dashboard</h1>
-<div class="subtitle">Simulated portfolio — no real money involved</div>
+<div class="top"><span class="dot"></span><h1>Paper Trading Dashboard</h1></div>
+<div class="subtitle">Simulated portfolio · updates automatically after each run</div>
 
 <div class="banner">
-  ⚠️ This tracks a fully simulated portfolio. Nothing here reflects real money or real trades.
-  Results here don't predict future performance — treat this as a track record in progress, not a verdict.
+  This tracks a fully simulated portfolio — no real money is involved. Past results here don't predict future performance.
 </div>
 
-<div id="content" class="loading">Loading portfolio data...</div>
+<div id="content" class="loading">Loading…</div>
 
 <div class="footer" id="footer" style="display:none;">
-  <button class="refresh-btn" onclick="load()">↻ Refresh</button>
-  <div style="margin-top:8px;">Last updated: <span id="last-updated">—</span></div>
+  <button class="refresh-btn" onclick="load()">Refresh</button>
+  <div style="margin-top:10px;">Last updated: <span id="last-updated">—</span></div>
+</div>
+
 </div>
 
 <script>
@@ -201,12 +225,10 @@ const RISK_TIERS = {
 function fmt(n, decimals = 2) {
   return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
-
 function fmtPct(n) {
   const sign = n >= 0 ? '+' : '';
   return `${sign}${(n * 100).toFixed(2)}%`;
 }
-
 function pnlClass(n) {
   return n >= 0 ? 'positive' : 'negative';
 }
@@ -215,7 +237,7 @@ async function load() {
   const content = document.getElementById('content');
   const footer = document.getElementById('footer');
   content.className = 'loading';
-  content.textContent = 'Loading portfolio data...';
+  content.textContent = 'Loading…';
   footer.style.display = 'none';
 
   try {
@@ -228,11 +250,10 @@ async function load() {
   } catch (err) {
     content.className = 'error';
     content.innerHTML = `
-      <div>⚠️ Couldn't load portfolio data.</div>
+      <div>Couldn't load portfolio data.</div>
       <div style="font-size:13px; margin-top:8px; color:var(--muted);">
-        This is normal if the agent hasn't completed its first run yet, or if the
-        repository is private (this dashboard needs the repo to be public to read
-        the data file). Error: ${err.message}
+        Normal if the agent hasn't completed its first run yet, or if the
+        repository is private. Error: ${err.message}
       </div>
     `;
     footer.style.display = 'block';
@@ -253,36 +274,18 @@ function render(state) {
 
   let html = `
     <div class="hero">
-      <div class="label">Total Portfolio Value</div>
+      <div class="label">TOTAL PORTFOLIO VALUE</div>
       <div class="value">$${fmt(equity)}</div>
       <div class="change ${pnlClass(totalReturn)}">${fmtPct(totalReturn)} since start</div>
     </div>
 
     <div class="grid">
-      <div class="metric">
-        <div class="label">Starting Capital</div>
-        <div class="value">$${fmt(STARTING_CAPITAL, 0)}</div>
-      </div>
-      <div class="metric">
-        <div class="label">Peak Value</div>
-        <div class="value">$${fmt(peak, 0)}</div>
-      </div>
-      <div class="metric">
-        <div class="label">Below Peak</div>
-        <div class="value ${drawdown > 0 ? 'negative' : ''}">${(drawdown * 100).toFixed(1)}%</div>
-      </div>
-      <div class="metric">
-        <div class="label">Open Positions</div>
-        <div class="value">${positions.length}</div>
-      </div>
-      <div class="metric">
-        <div class="label">Closed Trades</div>
-        <div class="value">${trades.length}</div>
-      </div>
-      <div class="metric">
-        <div class="label">Last Run</div>
-        <div class="value" style="font-size:14px;">${state.last_run || 'Never'}</div>
-      </div>
+      <div class="metric"><div class="label">Starting Capital</div><div class="value">$${fmt(STARTING_CAPITAL, 0)}</div></div>
+      <div class="metric"><div class="label">Peak Value</div><div class="value">$${fmt(peak, 0)}</div></div>
+      <div class="metric"><div class="label">Below Peak</div><div class="value ${drawdown > 0 ? 'negative' : ''}">${(drawdown * 100).toFixed(1)}%</div></div>
+      <div class="metric"><div class="label">Open Positions</div><div class="value">${positions.length}</div></div>
+      <div class="metric"><div class="label">Closed Trades</div><div class="value">${trades.length}</div></div>
+      <div class="metric"><div class="label">Last Run</div><div class="value" style="font-size:13px;">${state.last_run || 'Never'}</div></div>
     </div>
 
     <div class="section-title">Risk Tiers</div>
@@ -295,13 +298,12 @@ function render(state) {
     tierPositions.forEach(p => { tierValue += p.shares * p.entry_price; });
 
     html += `
-      <div class="tier-card ${tierKey}">
+      <div class="tier-card">
         <div class="tier-header">
-          <span class="tier-name">${tierMeta.label}</span>
+          <span class="tier-name"><span class="tier-dot ${tierKey}"></span>${tierMeta.label}</span>
           <span class="tier-value">$${fmt(tierValue, 0)} · ${tierPositions.length} position${tierPositions.length !== 1 ? 's' : ''}</span>
         </div>
     `;
-
     if (tierPositions.length === 0) {
       html += `<div class="empty-note">No open positions in this tier right now.</div>`;
     } else {
@@ -323,12 +325,12 @@ function render(state) {
   }
 
   html += `<div class="section-title">Recent Closed Trades</div>`;
-
   if (trades.length === 0) {
-    html += `<div class="empty-note">No trades closed yet. The agent only sells when a stop-loss triggers or the trend breaks -- this can take weeks after a buy.</div>`;
+    html += `<div class="tier-card"><div class="empty-note">No trades closed yet. The agent only sells when a stop-loss triggers or the trend breaks — this can take weeks after a buy.</div></div>`;
   } else {
     const recent = [...trades].reverse().slice(0, 15);
     html += `
+      <div class="tier-card">
       <table>
         <tr><th>Exit Date</th><th>Ticker</th><th>Tier</th><th>Return</th><th>P/L</th><th>Reason</th></tr>
         ${recent.map(t => {
@@ -336,33 +338,3 @@ function render(state) {
           const retPct = ((t.exit_price - t.entry_price) / t.entry_price);
           return `
             <tr>
-              <td>${t.exit_date}</td>
-              <td><strong>${t.ticker}</strong></td>
-              <td>${t.tier}</td>
-              <td class="${pnlClass(retPct)}">${fmtPct(retPct)}</td>
-              <td class="${pnlClass(pnl)}">$${fmt(pnl)}</td>
-              <td>${t.reason}</td>
-            </tr>
-          `;
-        }).join('')}
-      </table>
-    `;
-  }
-
-  html += `
-    <div class="banner" style="margin-top:24px;">
-      Note: position values above use each stock's purchase price, not today's live market
-      price (this page intentionally doesn't call any paid market-data API). For exact
-      current value including today's price moves, check the Actions log after each run.
-    </div>
-  `;
-
-  document.getElementById('content').innerHTML = html;
-  document.getElementById('content').className = '';
-}
-
-load();
-</script>
-
-</body>
-</html>
