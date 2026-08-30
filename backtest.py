@@ -144,7 +144,7 @@ class AlphaVantageProvider(DataProvider):
         data = self._get({
             "function": "TIME_SERIES_DAILY",
             "symbol": ticker,
-            "outputsize": "full",
+            "outputsize": "compact",
         })
         series = data.get("Time Series (Daily)", {})
         if not series:
