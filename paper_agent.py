@@ -45,9 +45,12 @@ from screener import (
     has_momentum,
     moving_average,
 )
+from news_check import check_news_sentiment
 
 STATE_FILE = "portfolio_state.json"
 LOG_FILE = "agent_log.txt"
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # ---------------------------------------------------------------------------
 # CONFIG
