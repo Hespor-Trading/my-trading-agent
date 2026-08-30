@@ -71,29 +71,14 @@ EXECUTION_ASSUMPTIONS = {
 
 MAX_PORTFOLIO_DRAWDOWN = 0.20
 
-# WATCHLIST: everything the agent has "on its radar," across sectors and
-# both US and Canadian markets. The free API can only afford to check
-# ~7-8 NEW stocks per day, so the agent doesn't check this whole list every
-# day -- it ROTATES through it, checking a different slice each run (see
-# ROTATION_BATCH_SIZE below). Over roughly a week, every stock here gets
-# checked. Stocks you already hold are always re-checked daily regardless
-# (needed for stop-loss/exit logic) -- rotation only applies to picking
-# NEW candidates.
 WATCHLIST = [
-    # US tech / large-cap
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "AVGO", "ORCL", "CRM",
-    # US finance / industrial / consumer
     "JPM", "V", "MA", "COST", "HD", "UNH", "LLY", "XOM", "CVX", "PG",
-    # US growth / mid-cap
     "NOW", "PANW", "SNOW", "NET", "DDOG", "UBER", "ABNB", "SHOP",
-    # Canadian large-cap (TSX)
     "SHOP.TO", "RY.TO", "TD.TO", "CNQ.TO", "ENB.TO", "BNS.TO",
     "BMO.TO", "CP.TO", "SU.TO", "TRI.TO",
 ]
 
-# How many NEW candidates to check per run. Kept conservative to stay
-# safely under the free tier's 25-calls/day limit alongside whatever
-# already-held positions also need a daily price check.
 ROTATION_BATCH_SIZE = 6
 
 
@@ -338,7 +323,7 @@ class PaperAgent:
 
         counts = {tier: sum(1 for p in self.state.positions if p.tier == tier) for tier in RISK_TIERS}
 
-                for tier in ("core", "growth", "aggressive"):
+        for tier in ("core", "growth", "aggressive"):
             for entry in results[tier]:
                 ticker = entry["ticker"]
                 if counts[tier] >= RISK_TIERS[tier]["max_positions"]:
