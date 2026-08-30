@@ -404,3 +404,79 @@ def show_history(agent: "PaperAgent"):
             continue
         wins = [t for t in tt if t.net_pnl > 0]
         total = sum(t.net_pnl for t in tt)
+
+    print("\n" + "=" * 62)
+    print("  'worst' is the number that matters most. Ask yourself whether")
+    print("  you would have held through it with real money on the line.")
+
+
+# ---------------------------------------------------------------------------
+# ENTRY POINT
+# ---------------------------------------------------------------------------
+
+def build_provider():
+    from backtest import AlphaVantageProvider, ALPHA_VANTAGE_API_KEY
+
+    if ALPHA_VANTAGE_API_KEY == "YOUR_FREE_KEY_HERE":
+        raise SystemExit(
+            "Set ALPHA_VANTAGE_API_KEY in backtest.py first.\n"
+            "Free key: https://www.alphavantage.co/support/#api-key\n\n"
+            "NOTE: the free tier (25 calls/day) is too small to run this agent\n"
+            "over a full universe daily. For real paper trading you need either\n"
+            "a paid tier or IBKR's data feed."
+        )
+    return AlphaVantageProvider(ALPHA_VANTAGE_API_KEY)
+
+
+def build_fundamentals_lookup(provider):
+    cache = {}
+
+    def lookup(ticker: str) -> dict:
+        if ticker in cache:
+            return cache[ticker]
+        try:
+            data = provider._get({"function": "OVERVIEW", "symbol": ticker})
+            mc = data.get("MarketCapitalization")
+            cache[ticker] = {"market_cap": float(mc) if mc and mc != "None" else None}
+        except Exception as e:
+            log(f"WARN fundamentals lookup failed for {ticker}: {e}")
+            cache[ticker] = {"market_cap": None}
+        return cache[ticker]
+
+    return lookup
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Paper trading agent (simulated money only)")
+    parser.add_argument("--run", action="store_true", help="Execute one trading day")
+    parser.add_argument("--status", action="store_true", help="Show current portfolio")
+    parser.add_argument("--history", action="store_true", help="Show closed trades")
+    parser.add_argument("--reset", action="store_true", help="Wipe state, start fresh")
+    args = parser.parse_args()
+
+    if args.reset:
+        confirm = input("This erases all paper trading history. Type 'reset' to confirm: ")
+        if confirm.strip().lower() == "reset":
+            for f in (STATE_FILE, LOG_FILE):
+                if os.path.exists(f):
+                    os.remove(f)
+            print("State cleared.")
+        else:
+            print("Cancelled.")
+        return
+
+    provider = build_provider()
+    agent = PaperAgent(provider, build_fundamentals_lookup(provider))
+
+    if args.run:
+        agent.run_once()
+    elif args.status:
+        show_status(agent)
+    elif args.history:
+        show_history(agent)
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
