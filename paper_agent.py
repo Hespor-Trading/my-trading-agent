@@ -68,11 +68,30 @@ EXECUTION_ASSUMPTIONS = {
 
 MAX_PORTFOLIO_DRAWDOWN = 0.20
 
-UNIVERSE = [
-    "AAPL", "MSFT", "NVDA",
-    "AMD", "SHOP.TO",
-    "RY.TO", "CNQ.TO",
+# WATCHLIST: everything the agent has "on its radar," across sectors and
+# both US and Canadian markets. The free API can only afford to check
+# ~7-8 NEW stocks per day, so the agent doesn't check this whole list every
+# day -- it ROTATES through it, checking a different slice each run (see
+# ROTATION_BATCH_SIZE below). Over roughly a week, every stock here gets
+# checked. Stocks you already hold are always re-checked daily regardless
+# (needed for stop-loss/exit logic) -- rotation only applies to picking
+# NEW candidates.
+WATCHLIST = [
+    # US tech / large-cap
+    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "AVGO", "ORCL", "CRM",
+    # US finance / industrial / consumer
+    "JPM", "V", "MA", "COST", "HD", "UNH", "LLY", "XOM", "CVX", "PG",
+    # US growth / mid-cap
+    "NOW", "PANW", "SNOW", "NET", "DDOG", "UBER", "ABNB", "SHOP",
+    # Canadian large-cap (TSX)
+    "SHOP.TO", "RY.TO", "TD.TO", "CNQ.TO", "ENB.TO", "BNS.TO",
+    "BMO.TO", "CP.TO", "SU.TO", "TRI.TO",
 ]
+
+# How many NEW candidates to check per run. Kept conservative to stay
+# safely under the free tier's 25-calls/day limit alongside whatever
+# already-held positions also need a daily price check.
+ROTATION_BATCH_SIZE = 6
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +146,8 @@ class PortfolioState:
     peak_equity: float = STARTING_CAPITAL
     started_on: str = ""
     last_run: str = ""
+    rotation_index: int = 0
+    fundamentals_cache: dict = field(default_factory=dict)
 
     @classmethod
     def fresh(cls) -> "PortfolioState":
@@ -137,11 +158,17 @@ class PortfolioState:
             peak_equity=STARTING_CAPITAL,
             started_on=_now(),
             last_run="",
+            rotation_index=0,
+            fundamentals_cache={},
         )
 
 
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def _today() -> str:
@@ -160,6 +187,8 @@ def load_state() -> PortfolioState:
         peak_equity=raw.get("peak_equity", STARTING_CAPITAL),
         started_on=raw.get("started_on", ""),
         last_run=raw.get("last_run", ""),
+        rotation_index=raw.get("rotation_index", 0),
+        fundamentals_cache=raw.get("fundamentals_cache", {}),
     )
 
 
@@ -171,6 +200,8 @@ def save_state(state: PortfolioState):
         "peak_equity": state.peak_equity,
         "started_on": state.started_on,
         "last_run": state.last_run,
+        "rotation_index": state.rotation_index,
+        "fundamentals_cache": state.fundamentals_cache,
     }
     tmp = STATE_FILE + ".tmp"
     with open(tmp, "w") as f:
@@ -267,7 +298,22 @@ class PaperAgent:
         log(f"SELL {pos.ticker} [{pos.tier}] @ ${fill:.2f} ({reason}) "
             f"net P/L ${trade.net_pnl:,.2f} ({trade.return_pct:+.1%})")
 
-    def check_entries(self, prices: dict[str, float]):
+    def next_rotation_batch(self) -> list[str]:
+        held = {p.ticker for p in self.state.positions}
+        available = [t for t in WATCHLIST if t not in held]
+        if not available:
+            return []
+
+        n = len(available)
+        start = self.state.rotation_index % n
+        batch = []
+        for i in range(min(ROTATION_BATCH_SIZE, n)):
+            batch.append(available[(start + i) % n])
+
+        self.state.rotation_index = (start + ROTATION_BATCH_SIZE) % n
+        return batch
+
+    def check_entries(self, prices: dict[str, float], candidates: list[str]):
         equity = self.total_equity(prices)
         self.state.peak_equity = max(self.state.peak_equity, equity)
         drawdown = (self.state.peak_equity - equity) / self.state.peak_equity if self.state.peak_equity else 0
@@ -278,10 +324,14 @@ class PaperAgent:
             return
 
         held = {p.ticker for p in self.state.positions}
-        candidates = [t for t in UNIVERSE if t not in held]
+        candidates = [t for t in candidates if t not in held]
+        if not candidates:
+            log("No new candidates this run (already holding everything in today's batch).")
+            return
 
-        log(f"Screening {len(candidates)} candidates...")
-        results = screen_universe(candidates, self.provider, self.fundamentals_lookup)
+        log(f"Screening {len(candidates)} candidates (rotating through {len(WATCHLIST)}-stock watchlist): "
+            f"{', '.join(candidates)}")
+        results = screen_universe(candidates, self.provider, self.cached_fundamentals_lookup)
 
         counts = {tier: sum(1 for p in self.state.positions if p.tier == tier) for tier in RISK_TIERS}
 
@@ -295,6 +345,21 @@ class PaperAgent:
                     continue
                 if self._open(ticker, tier, price, prices):
                     counts[tier] += 1
+
+    def cached_fundamentals_lookup(self, ticker: str) -> dict:
+        cached = self.state.fundamentals_cache.get(ticker)
+        if cached:
+            cached_on = datetime.fromisoformat(cached["cached_on"])
+            age_days = (datetime.now(timezone.utc) - cached_on).days
+            if age_days < 30:
+                return {"market_cap": cached["market_cap"]}
+
+        result = self.fundamentals_lookup(ticker)
+        self.state.fundamentals_cache[ticker] = {
+            "market_cap": result.get("market_cap"),
+            "cached_on": _now_iso(),
+        }
+        return result
 
     def _open(self, ticker: str, tier: str, quoted_price: float, prices: dict) -> bool:
         cfg = RISK_TIERS[tier]
@@ -328,14 +393,17 @@ class PaperAgent:
         log("=" * 55)
         log("PAPER TRADING RUN START (no real money)")
 
-        tickers = sorted(set(UNIVERSE) | {p.ticker for p in self.state.positions})
+        held_tickers = {p.ticker for p in self.state.positions}
+        todays_batch = self.next_rotation_batch()
+        tickers = sorted(held_tickers | set(todays_batch))
+
         prices = self.current_prices(tickers)
         if not prices:
             log("ERROR: no prices retrieved. Check API key / rate limits. Aborting run.")
             return
 
         self.check_exits(prices)
-        self.check_entries(prices)
+        self.check_entries(prices, todays_batch)
 
         self.state.last_run = _now()
         save_state(self.state)
@@ -404,7 +472,11 @@ def show_history(agent: "PaperAgent"):
             continue
         wins = [t for t in tt if t.net_pnl > 0]
         total = sum(t.net_pnl for t in tt)
-
+        worst = min(t.return_pct for t in tt)
+        best = max(t.return_pct for t in tt)
+        print(f"    {tier:<11} {len(tt):>3} trades  "
+              f"win rate {len(wins)/len(tt):>5.0%}  "
+              f"net ${total:>+10,.2f}  best {best:+.0%}  worst {worst:+.0%}")
     print("\n" + "=" * 62)
     print("  'worst' is the number that matters most. Ask yourself whether")
     print("  you would have held through it with real money on the line.")
