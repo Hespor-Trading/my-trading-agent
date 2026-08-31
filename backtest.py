@@ -24,6 +24,13 @@ DATA SOURCE:
   This script is written against a generic `DataProvider` interface so you
   can plug in whichever source you have access to:
     - Alpha Vantage (free tier, https://www.alphavantage.co/support/#api-key)
+      -- what paper_agent.py uses. Free tier is capped at 25 calls/day, but
+      it covers Canadian TSX tickers (SHOP.TO, RY.TO, etc.), which matters
+      since WATCHLIST includes them.
+    - Finnhub (free tier, 60 calls/minute, https://finnhub.io/docs/api) --
+      no daily cap, but its free tier is US-exchange-only, which silently
+      drops Canadian coverage. Kept here as an option, not currently wired
+      into paper_agent.py.
     - IBKR historical data API (best if you're heading toward IBKR live trading)
     - A local CSV export from your broker
 
@@ -55,6 +62,12 @@ from typing import Optional
 #   export ALPHA_VANTAGE_API_KEY=your_key_here      (Mac/Linux)
 #   set ALPHA_VANTAGE_API_KEY=your_key_here          (Windows)
 ALPHA_VANTAGE_API_KEY = os.environ.get("ALPHA_VANTAGE_API_KEY", "YOUR_FREE_KEY_HERE")
+
+# Same idea, for Finnhub (https://finnhub.io/register). Never typed into
+# this file -- always read from the environment / a GitHub Actions Secret.
+#   export FINNHUB_API_KEY=your_key_here      (Mac/Linux)
+#   set FINNHUB_API_KEY=your_key_here          (Windows)
+FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY", "YOUR_FREE_KEY_HERE")
 
 # Tiered risk allocation. Assign each ticker you backtest to a tier below.
 # Total capital is split across tiers by "capital_pct"; within a tier,
@@ -174,6 +187,68 @@ class AlphaVantageProvider(DataProvider):
         } for q in quarterly]
         time.sleep(13)
         return rows
+
+
+class FinnhubProvider(DataProvider):
+    """Free tier: 60 calls/minute, no daily cap. NOT currently used by
+    paper_agent.py -- its free tier only covers US-listed exchanges, which
+    would silently drop the Canadian tickers (.TO) in WATCHLIST. Kept here
+    as an available option; Alpha Vantage remains the active provider.
+    Docs: https://finnhub.io/docs/api"""
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base = "https://finnhub.io/api/v1"
+
+    def _get(self, path: str, params: dict) -> dict:
+        params = {**params, "token": self.api_key}
+        url = self.base + path + "?" + "&".join(f"{k}={v}" for k, v in params.items())
+        try:
+            with urllib.request.urlopen(url, timeout=15) as resp:
+                data = json.loads(resp.read().decode())
+        except urllib.error.URLError as e:
+            raise RuntimeError(f"Data fetch failed for {path} {params}: {e}")
+        time.sleep(1.0)  # stay comfortably under the 60 calls/minute cap
+        return data
+
+    def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
+        from_ts = int(datetime.strptime(start, "%Y-%m-%d").timestamp())
+        to_ts = int(time.time())
+        data = self._get("/stock/candle", {
+            "symbol": ticker, "resolution": "D", "from": from_ts, "to": to_ts,
+        })
+        if data.get("s") != "ok":
+            raise RuntimeError(f"No price data for {ticker}: {data}")
+        rows = []
+        for i, ts in enumerate(data["t"]):
+            rows.append({
+                "date": datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d"),
+                "open": data["o"][i],
+                "high": data["h"][i],
+                "low": data["l"][i],
+                "close": data["c"][i],
+                "volume": int(data["v"][i]),
+            })
+        return rows
+
+    def get_earnings(self, ticker: str) -> list[dict]:
+        data = self._get("/stock/earnings", {"symbol": ticker})
+        if not isinstance(data, list):
+            return []
+        return [{
+            "date": e.get("period"),
+            "reported_eps": _safe_float(e.get("actual")),
+            "estimated_eps": _safe_float(e.get("estimate")),
+        } for e in data]
+
+    def get_market_cap(self, ticker: str) -> Optional[float]:
+        """Not part of the DataProvider interface -- fundamentals glue that
+        paper_agent.py's build_fundamentals_lookup() calls directly."""
+        data = self._get("/stock/metric", {"symbol": ticker, "metric": "all"})
+        mc = (data.get("metric") or {}).get("marketCapitalization")
+        # Finnhub reports this in millions; normalize to raw dollars so it's
+        # comparable to TIER_RULES' min_market_cap thresholds.
+        return float(mc) * 1_000_000 if mc is not None else None
 
 
 def _safe_float(x) -> Optional[float]:
