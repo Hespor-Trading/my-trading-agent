@@ -338,3 +338,25 @@ function render(state) {
           const retPct = ((t.exit_price - t.entry_price) / t.entry_price);
           return `
             <tr>
+              <td>${t.exit_date}</td>
+              <td><strong>${t.ticker}</strong></td>
+              <td>${t.tier}</td>
+              <td class="${pnlClass(retPct)}">${fmtPct(retPct)}</td>
+              <td class="${pnlClass(pnl)}">$${fmt(pnl)}</td>
+              <td>${t.reason}</td>
+            </tr>
+          `;
+        }).join('')}
+      </table>
+      </div>
+    `;
+  }
+
+  document.getElementById('content').innerHTML = html;
+  document.getElementById('content').className = '';
+}
+
+load();
+</script>
+</body>
+</html>
