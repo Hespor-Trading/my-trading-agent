@@ -70,6 +70,7 @@ EXECUTION_ASSUMPTIONS = {
 }
 
 MAX_PORTFOLIO_DRAWDOWN = 0.20
+MAX_EQUITY_HISTORY = 90
 
 WATCHLIST = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "AVGO", "ORCL", "CRM",
@@ -136,6 +137,7 @@ class PortfolioState:
     last_run: str = ""
     rotation_index: int = 0
     fundamentals_cache: dict = field(default_factory=dict)
+    equity_history: list = field(default_factory=list)
 
     @classmethod
     def fresh(cls) -> "PortfolioState":
@@ -148,6 +150,7 @@ class PortfolioState:
             last_run="",
             rotation_index=0,
             fundamentals_cache={},
+            equity_history=[],
         )
 
 
@@ -177,6 +180,7 @@ def load_state() -> PortfolioState:
         last_run=raw.get("last_run", ""),
         rotation_index=raw.get("rotation_index", 0),
         fundamentals_cache=raw.get("fundamentals_cache", {}),
+        equity_history=raw.get("equity_history", []),
     )
 
 
@@ -190,6 +194,7 @@ def save_state(state: PortfolioState):
         "last_run": state.last_run,
         "rotation_index": state.rotation_index,
         "fundamentals_cache": state.fundamentals_cache,
+        "equity_history": state.equity_history,
     }
     tmp = STATE_FILE + ".tmp"
     with open(tmp, "w") as f:
@@ -401,9 +406,13 @@ class PaperAgent:
         self.check_entries(prices, todays_batch)
 
         self.state.last_run = _now()
-        save_state(self.state)
 
         equity = self.total_equity(prices)
+        self.state.equity_history.append({"date": _today(), "equity": equity})
+        self.state.equity_history = self.state.equity_history[-MAX_EQUITY_HISTORY:]
+
+        save_state(self.state)
+
         log(f"RUN COMPLETE. Equity ${equity:,.2f} "
             f"({(equity/STARTING_CAPITAL - 1):+.2%} since inception)")
         log("=" * 55)
