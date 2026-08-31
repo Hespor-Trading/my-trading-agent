@@ -193,10 +193,89 @@
     box-shadow: var(--shadow);
   }
   .refresh-btn:hover { background: #f1f3f4; }
+
+  /* --- Logo placeholder --- */
+  .logo-spot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .logo-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--blue);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  .logo-caption {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* --- Recent Activity --- */
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-tag {
+    flex-shrink: 0;
+    min-width: 52px;
+    text-align: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #f1f3f4;
+    color: var(--muted);
+  }
+  .activity-tag.buy { background: #e8f0fe; color: var(--blue); }
+  .activity-tag.sell { background: #fce8e6; color: var(--red); }
+  .activity-tag.skip { background: #fef7e0; color: #7a5b00; }
+  .activity-text { flex: 1; }
+  .activity-time {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<!--
+  LOGO PLACEHOLDER
+  ----------------
+  To swap in a real logo, drop the image file next to this page (e.g. logo.png
+  or logo.svg) and replace the <div class="logo-mark">…</div> below with:
+
+      <img class="logo-mark" src="./logo.png" alt="Your logo">
+
+  The .logo-mark CSS rule already sizes it to 44x44 with rounded corners and
+  `object-fit: contain`, so the image keeps its aspect ratio inside that box.
+  Change the width/height there if you want it bigger, and drop the
+  `border: 1px dashed` line once a real image is in place. The caption <span>
+  below is only a reminder — delete it at the same time.
+-->
+<div class="logo-spot">
+  <div class="logo-mark">PT</div>
+  <span class="logo-caption">Logo placeholder — see the comment in the HTML to swap in an image.</span>
+</div>
 
 <div class="top"><span class="dot"></span><h1>Paper Trading Dashboard</h1></div>
 <div class="subtitle">Simulated portfolio · updates automatically after each run</div>
@@ -206,6 +285,8 @@
 </div>
 
 <div id="content" class="loading">Loading…</div>
+
+<div id="activity"></div>
 
 <div class="footer" id="footer" style="display:none;">
   <button class="refresh-btn" onclick="load()">Refresh</button>
@@ -239,6 +320,8 @@ async function load() {
   content.className = 'loading';
   content.textContent = 'Loading…';
   footer.style.display = 'none';
+
+  loadActivity();
 
   try {
     const res = await fetch('./portfolio_state.json?t=' + Date.now());
@@ -354,6 +437,122 @@ function render(state) {
 
   document.getElementById('content').innerHTML = html;
   document.getElementById('content').className = '';
+}
+
+// ---------- Recent Activity ----------
+
+const ACTIVITY_LINES = 10;
+
+const SELL_REASONS = {
+  stop_loss: 'its stop-loss was hit',
+  trend_break: 'its uptrend broke',
+};
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+function tierLabel(key) {
+  return (RISK_TIERS[key] || {}).label || key;
+}
+
+// Turns one raw log line into { tag, time, text }. BUY / SELL / SKIP lines get
+// a plain-English sentence; anything else is passed through as written.
+function describeLogLine(line) {
+  const stamped = line.match(/^\[([^\]]+)\]\s*(.*)$/);
+  const time = stamped ? stamped[1] : '';
+  const msg = (stamped ? stamped[2] : line).trim();
+
+  let m = msg.match(/^BUY\s+(\S+)\s+\[(\w+)\]\s+([\d.]+)\s+sh\s+@\s+\$([\d,.]+)\s*=\s*\$([\d,.]+),\s*stop\s+\$([\d,.]+)/);
+  if (m) {
+    const [, ticker, tier, shares, price, total, stop] = m;
+    return {
+      tag: 'buy', time,
+      text: `Bought ${shares} shares of <strong>${esc(ticker)}</strong> at $${esc(price)} ` +
+            `($${esc(total)} total) for the ${esc(tierLabel(tier))} tier, with a stop-loss at $${esc(stop)}.`,
+    };
+  }
+
+  m = msg.match(/^SELL\s+(\S+)\s+\[(\w+)\]\s+@\s+\$([\d,.]+)\s+\(([^)]*)\)\s+net P\/L\s+\$(-?[\d,.]+)\s+\(([^)]*)\)/);
+  if (m) {
+    const [, ticker, tier, price, reason, pnl, retPct] = m;
+    const why = Object.prototype.hasOwnProperty.call(SELL_REASONS, reason)
+      ? SELL_REASONS[reason]
+      : `of ${esc(reason.replace(/_/g, ' '))}`;
+    const lost = pnl.trim().startsWith('-');
+    const amount = pnl.replace('-', '');
+    return {
+      tag: 'sell', time,
+      text: `Sold <strong>${esc(ticker)}</strong> from the ${esc(tierLabel(tier))} tier at $${esc(price)} because ` +
+            `${why} — a net ${lost ? 'loss' : 'gain'} of $${esc(amount)} (${esc(retPct)}).`,
+    };
+  }
+
+  m = msg.match(/^SKIP\s+(\S+):\s*(.*)$/);
+  if (m) {
+    const [, ticker, detail] = m;
+    const news = detail.match(/^negative news flag\s*--\s*(.*)$/);
+    return {
+      tag: 'skip', time,
+      text: news
+        ? `Passed on <strong>${esc(ticker)}</strong> — recent news looked negative: ${esc(news[1])}`
+        : `Passed on <strong>${esc(ticker)}</strong> — ${esc(detail)}`,
+    };
+  }
+
+  return { tag: 'log', time, text: esc(msg) };
+}
+
+function renderActivity(text) {
+  const lines = text
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    // Drop the "=====" divider lines the agent writes around each run.
+    .filter(l => !/^\[[^\]]+\]\s*=+\s*$/.test(l));
+
+  let html = `<div class="section-title">Recent Activity</div><div class="tier-card">`;
+
+  if (lines.length === 0) {
+    html += `<div class="empty-note">The activity log is empty. It fills up once the agent completes a run.</div>`;
+  } else {
+    html += lines.slice(-ACTIVITY_LINES).reverse().map(line => {
+      const e = describeLogLine(line);
+      return `
+        <div class="activity-item">
+          <span class="activity-tag ${e.tag}">${e.tag === 'log' ? 'run' : e.tag}</span>
+          <div class="activity-text">
+            ${e.text}
+            <div class="activity-time">${esc(e.time)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  html += `</div>`;
+  document.getElementById('activity').innerHTML = html;
+}
+
+async function loadActivity() {
+  const el = document.getElementById('activity');
+  try {
+    const res = await fetch('./agent_log.txt?t=' + Date.now());
+    if (!res.ok) throw new Error('File not found (status ' + res.status + ')');
+    renderActivity(await res.text());
+  } catch (err) {
+    el.innerHTML = `
+      <div class="section-title">Recent Activity</div>
+      <div class="tier-card">
+        <div class="empty-note">
+          Couldn't load the activity log. Normal if the agent hasn't run yet, or if the
+          repository is private. Error: ${esc(err.message)}
+        </div>
+      </div>
+    `;
+  }
 }
 
 load();
