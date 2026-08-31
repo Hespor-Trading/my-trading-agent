@@ -84,7 +84,7 @@ def main():
         print(f"  {ticker:<9} vol={vol:>5.0%}  {status[0]}")
 
     print("\n--- Full agent run (simulated) ---")
-    paper_agent.UNIVERSE = list(provider.profiles.keys())
+    paper_agent.WATCHLIST = list(provider.profiles.keys())
     paper_agent.STATE_FILE = "test_state.json"
     paper_agent.LOG_FILE = "test_log.txt"
     for f in ("test_state.json", "test_log.txt"):

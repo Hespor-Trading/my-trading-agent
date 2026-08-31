@@ -80,6 +80,23 @@ WATCHLIST = [
     "BMO.TO", "CP.TO", "SU.TO", "TRI.TO",
 ]
 
+# Simple sector classification for concentration-cap checks. Not GICS-precise,
+# just enough to keep one tier from becoming a single-sector bet.
+SECTOR = {
+    "AAPL": "tech", "MSFT": "tech", "GOOGL": "tech", "META": "tech", "NVDA": "tech",
+    "AMD": "tech", "AVGO": "tech", "ORCL": "tech", "CRM": "tech", "NOW": "tech",
+    "PANW": "tech", "SNOW": "tech", "NET": "tech", "DDOG": "tech", "SHOP": "tech",
+    "SHOP.TO": "tech",
+    "JPM": "finance", "V": "finance", "MA": "finance",
+    "RY.TO": "finance", "TD.TO": "finance", "BNS.TO": "finance", "BMO.TO": "finance",
+    "XOM": "energy", "CVX": "energy", "CNQ.TO": "energy", "ENB.TO": "energy", "SU.TO": "energy",
+    "UNH": "healthcare", "LLY": "healthcare",
+    "UBER": "industrial", "CP.TO": "industrial", "TRI.TO": "industrial",
+    "AMZN": "consumer", "COST": "consumer", "HD": "consumer", "PG": "consumer", "ABNB": "consumer",
+}
+
+MAX_SECTOR_PCT_OF_TIER = 0.40
+
 ROTATION_BATCH_SIZE = 6
 
 
@@ -96,6 +113,7 @@ class PaperPosition:
     shares: float
     stop_price: float
     commission_paid: float
+    high_water_mark: float
 
     def market_value(self, price: float) -> float:
         return self.shares * price
@@ -173,7 +191,10 @@ def load_state() -> PortfolioState:
         raw = json.load(f)
     return PortfolioState(
         cash_by_tier=raw["cash_by_tier"],
-        positions=[PaperPosition(**p) for p in raw["positions"]],
+        positions=[
+            PaperPosition(**{**p, "high_water_mark": p.get("high_water_mark", p["entry_price"])})
+            for p in raw["positions"]
+        ],
         closed_trades=[ClosedTrade(**t) for t in raw["closed_trades"]],
         peak_equity=raw.get("peak_equity", STARTING_CAPITAL),
         started_on=raw.get("started_on", ""),
@@ -257,6 +278,9 @@ class PaperAgent:
             price = prices.get(pos.ticker)
             if price is None:
                 continue
+
+            pos.high_water_mark = max(pos.high_water_mark, price)
+            pos.stop_price = pos.high_water_mark * (1 - RISK_TIERS[pos.tier]["stop_loss_pct"])
 
             reason = None
             if price <= pos.stop_price:
@@ -367,6 +391,19 @@ class PaperAgent:
         alloc = tier_val * cfg["position_size_pct"]
         commission = EXECUTION_ASSUMPTIONS["commission_per_trade"]
 
+        sector = SECTOR.get(ticker, "other")
+        if tier_val > 0:
+            sector_val = sum(
+                p.market_value(prices.get(p.ticker, p.entry_price))
+                for p in self.state.positions
+                if p.tier == tier and SECTOR.get(p.ticker, "other") == sector
+            )
+            current_pct = sector_val / tier_val
+            if (sector_val + alloc) / tier_val > MAX_SECTOR_PCT_OF_TIER:
+                log(f"SKIP {ticker}: would exceed sector cap "
+                    f"({sector} already at {current_pct:.0%} of {tier} tier)")
+                return False
+
         available = self.state.cash_by_tier[tier] - commission
         if available <= 0:
             return False
@@ -382,7 +419,7 @@ class PaperAgent:
         pos = PaperPosition(
             ticker=ticker, tier=tier, entry_price=fill, entry_date=_today(),
             shares=shares, stop_price=fill * (1 - cfg["stop_loss_pct"]),
-            commission_paid=commission,
+            commission_paid=commission, high_water_mark=fill,
         )
         self.state.positions.append(pos)
         log(f"BUY  {ticker} [{tier}] {shares:.2f} sh @ ${fill:.2f} "
