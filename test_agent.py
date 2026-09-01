@@ -8,6 +8,7 @@ Run: python test_agent.py
 import os
 import math
 import random
+from datetime import datetime, timezone, timedelta
 import paper_agent
 from screener import passes_liquidity, has_momentum, assign_tier, annualized_volatility
 
@@ -111,6 +112,26 @@ def main():
     )
     print("RESULT:", "sizing scales down with volatility, within bounds" if sizing_ok
           else "VOLATILITY SIZING BROKEN -- BUG")
+
+    print("\n--- Verifying earnings-blackout skip logic ---")
+    today = datetime.now(timezone.utc)
+    # last reported 88 days ago -> next estimate lands ~3 days out -> should skip
+    near_date = (today - timedelta(days=88)).strftime("%Y-%m-%d")
+    # last reported 60 days ago -> next estimate lands ~31 days out -> should not skip
+    far_date = (today - timedelta(days=60)).strftime("%Y-%m-%d")
+    near_earnings = [{"date": near_date, "reported_eps": 1.0, "estimated_eps": 1.0}]
+    far_earnings = [{"date": far_date, "reported_eps": 1.0, "estimated_eps": 1.0}]
+
+    near_result = paper_agent.earnings_too_close(near_earnings)
+    far_result = paper_agent.earnings_too_close(far_earnings)
+    none_result = paper_agent.earnings_too_close([])
+    print(f"  reported {near_date} (~88d ago) -> {'SKIP: ' + near_result if near_result else 'no skip'}")
+    print(f"  reported {far_date} (~60d ago) -> {'SKIP: ' + far_result if far_result else 'no skip'}")
+    print(f"  no earnings history             -> {'SKIP: ' + none_result if none_result else 'no skip'} (fail-open expected)")
+
+    blackout_ok = near_result is not None and far_result is None and none_result is None
+    print("RESULT:", "earnings blackout logic correct" if blackout_ok
+          else "EARNINGS BLACKOUT LOGIC BROKEN -- BUG")
 
     print("\n--- Verifying tier capital limits held ---")
     prices = agent.current_prices(list(provider.profiles.keys()))

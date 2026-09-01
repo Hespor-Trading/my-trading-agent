@@ -24,6 +24,7 @@ LIQUIDITY FLOOR (applies to ALL tiers, non-negotiable):
 """
 
 import statistics
+from datetime import datetime, timedelta
 from typing import Optional
 
 
@@ -104,6 +105,21 @@ def moving_average(prices: list[dict], window: int) -> Optional[float]:
     if len(prices) < window:
         return None
     return sum(p["close"] for p in prices[-window:]) / window
+
+
+def estimate_next_earnings_date(earnings: list[dict]) -> Optional[str]:
+    """Rough next-earnings estimate from quarterly history that's already
+    been fetched for the tier screen -- no extra API call. Just the most
+    recent reported date plus one standard ~91-day quarterly cadence.
+    Returns None if there's no earnings history to estimate from."""
+    reported = [e["date"] for e in earnings if e.get("reported_eps") is not None and e.get("date")]
+    if not reported:
+        return None
+    try:
+        last = max(datetime.strptime(d, "%Y-%m-%d") for d in reported)
+    except ValueError:
+        return None
+    return (last + timedelta(days=91)).strftime("%Y-%m-%d")
 
 
 # ---------------------------------------------------------------------------
@@ -199,9 +215,9 @@ def screen_universe(
 
         try:
             earnings = provider.get_earnings(ticker)
-            earnings_quarters = len([e for e in earnings if e.get("reported_eps") is not None])
         except Exception:
-            earnings_quarters = 0
+            earnings = []
+        earnings_quarters = len([e for e in earnings if e.get("reported_eps") is not None])
 
         fundamentals = fundamentals_lookup(ticker) or {}
         tier, detail = assign_tier(prices, fundamentals.get("market_cap"), earnings_quarters)
@@ -209,7 +225,7 @@ def screen_universe(
         if tier is None:
             results["rejected"][ticker] = f"TIER: {detail}"
         else:
-            results[tier].append({"ticker": ticker, "detail": detail})
+            results[tier].append({"ticker": ticker, "detail": detail, "earnings": earnings})
 
     return results
 

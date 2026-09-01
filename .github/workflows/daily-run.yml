@@ -34,3 +34,25 @@ jobs:
           git add portfolio_state.json agent_log.txt 2>/dev/null || true
           git diff --quiet --cached || git commit -m "Daily paper trading run"
           git push
+
+      # Only runs if an earlier step in this job failed -- never touches or
+      # slows down a normal successful run. Needs two secrets that aren't
+      # set up yet (see repo Settings -> Secrets and variables -> Actions):
+      #
+      #   GMAIL_ADDRESS       the Gmail account that will send the alert
+      #   GMAIL_APP_PASSWORD  an "App Password" for that account, NOT its
+      #                       normal login password. Generate one at:
+      #                         Google Account -> Security -> 2-Step
+      #                         Verification (must be turned on first) ->
+      #                         App Passwords -> create one for "Mail" /
+      #                         "Other (Custom name)" -> copy the 16-char
+      #                         password it gives you into this secret.
+      - name: Email alert on run failure
+        if: failure()
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_TO_ADDRESS: info@hespor.com
+          ALERT_SUBJECT: "Trading agent run failed"
+          ALERT_BODY: "The daily paper trading run failed. Details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: python notify_failure.py

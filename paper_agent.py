@@ -45,6 +45,7 @@ from screener import (
     has_momentum,
     moving_average,
     annualized_volatility,
+    estimate_next_earnings_date,
     TIER_RULES,
 )
 from news_check import check_news_sentiment
@@ -241,6 +242,21 @@ def simulate_fill(quoted_price: float, tier: str, side: str) -> float:
     return quoted_price * (1 + slip) if side == "buy" else quoted_price * (1 - slip)
 
 
+EARNINGS_BLACKOUT_DAYS = 3
+
+
+def earnings_too_close(earnings: list[dict]) -> Optional[str]:
+    """Returns the estimated next-earnings date if it falls within the
+    blackout window, else None. No earnings history to estimate from is
+    not treated as "too close" -- same fail-open principle as the news
+    check, so a data gap never blocks a trade on its own."""
+    next_date = estimate_next_earnings_date(earnings)
+    if next_date is None:
+        return None
+    days_until = (datetime.strptime(next_date, "%Y-%m-%d").date() - datetime.now(timezone.utc).date()).days
+    return next_date if 0 <= days_until <= EARNINGS_BLACKOUT_DAYS else None
+
+
 # ---------------------------------------------------------------------------
 # AGENT CORE
 # ---------------------------------------------------------------------------
@@ -361,6 +377,11 @@ class PaperAgent:
                     break
                 price = prices.get(ticker)
                 if price is None:
+                    continue
+
+                estimated_date = earnings_too_close(entry.get("earnings", []))
+                if estimated_date:
+                    log(f"SKIP {ticker}: earnings estimated within {EARNINGS_BLACKOUT_DAYS} days ({estimated_date})")
                     continue
 
                 if ANTHROPIC_API_KEY:
