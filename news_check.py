@@ -25,7 +25,7 @@ import urllib.request
 import urllib.error
 
 ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
-MODEL = "claude-haiku-4-5-20251001"  # cheapest current model; sufficient for this narrow task
+MODEL = "claude-sonnet-5"  # more capable model for better-quality judgment on company news, at a modestly higher per-check cost
 
 
 def check_news_sentiment(ticker: str, api_key: str) -> dict:
