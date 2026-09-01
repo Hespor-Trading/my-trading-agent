@@ -44,6 +44,8 @@ from screener import (
     passes_liquidity,
     has_momentum,
     moving_average,
+    annualized_volatility,
+    TIER_RULES,
 )
 from news_check import check_news_sentiment
 
@@ -385,10 +387,30 @@ class PaperAgent:
         }
         return result
 
+    def _position_size_pct(self, ticker: str, tier: str) -> float:
+        """Scale the tier's normal position size down for a volatile stock --
+        calmer names get close to the tier's full size, the wildest ones
+        still passing the tier's own volatility ceiling get down to about
+        half. A volatility lookup failure falls back to the tier's normal
+        size rather than blocking or shrinking the trade on a data hiccup."""
+        normal_pct = RISK_TIERS[tier]["position_size_pct"]
+        try:
+            rows = self.provider.get_daily_prices(ticker, "2020-01-01")
+            vol = annualized_volatility(rows, days=60)
+        except Exception as e:
+            log(f"WARN volatility lookup failed for {ticker}: {e}")
+            return normal_pct
+
+        ceiling = TIER_RULES[tier]["max_annualized_volatility"]
+        ratio = min(vol / ceiling, 1.0) if vol > 0 else 0.0
+        pct = 1.0 - 0.5 * ratio
+        log(f"Sizing {ticker} at {pct:.1%} of normal (volatility {vol:.0%})")
+        return normal_pct * pct
+
     def _open(self, ticker: str, tier: str, quoted_price: float, prices: dict) -> bool:
         cfg = RISK_TIERS[tier]
         tier_val = self.tier_equity(tier, prices)
-        alloc = tier_val * cfg["position_size_pct"]
+        alloc = tier_val * self._position_size_pct(ticker, tier)
         commission = EXECUTION_ASSUMPTIONS["commission_per_trade"]
 
         sector = SECTOR.get(ticker, "other")

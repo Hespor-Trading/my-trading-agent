@@ -295,6 +295,12 @@ function fmtPct(n) {
 function pnlClass(n) {
   return n >= 0 ? 'positive' : 'negative';
 }
+function tradePnl(t) {
+  return (t.exit_price - t.entry_price) * t.shares - t.total_commission;
+}
+function tradeReturnPct(t) {
+  return (t.exit_price - t.entry_price) / t.entry_price;
+}
 
 // The agent stamps everything in UTC as "YYYY-MM-DD HH:MM:SS UTC". Parse
 // that into a real Date, then render it in Pacific time for display.
@@ -417,6 +423,26 @@ function render(state) {
     html += `</div>`;
   }
 
+  html += `<div class="section-title">Performance Stats</div>`;
+  if (trades.length < 5) {
+    html += `<div class="tier-card"><div class="empty-note">Not enough closed trades yet for meaningful stats (need at least 5).</div></div>`;
+  } else {
+    const winners = trades.filter(t => tradePnl(t) > 0);
+    const losers = trades.filter(t => tradePnl(t) <= 0);
+    const winRate = winners.length / trades.length;
+    const avgWinPct = winners.length ? winners.reduce((a, t) => a + tradeReturnPct(t), 0) / winners.length : 0;
+    const avgLossPct = losers.length ? losers.reduce((a, t) => a + tradeReturnPct(t), 0) / losers.length : 0;
+
+    html += `
+      <div class="grid">
+        <div class="metric"><div class="label">Win Rate</div><div class="value">${(winRate * 100).toFixed(0)}%</div></div>
+        <div class="metric"><div class="label">Avg Winning Trade</div><div class="value ${winners.length ? 'positive' : ''}">${winners.length ? fmtPct(avgWinPct) : '—'}</div></div>
+        <div class="metric"><div class="label">Avg Losing Trade</div><div class="value ${losers.length ? 'negative' : ''}">${losers.length ? fmtPct(avgLossPct) : '—'}</div></div>
+        <div class="metric"><div class="label">Closed Trades</div><div class="value">${trades.length}</div></div>
+      </div>
+    `;
+  }
+
   html += `<div class="section-title">Recent Closed Trades</div>`;
   if (trades.length === 0) {
     html += `<div class="tier-card"><div class="empty-note">No trades closed yet. The agent only sells when a stop-loss triggers or the trend breaks — this can take weeks after a buy.</div></div>`;
@@ -427,8 +453,8 @@ function render(state) {
       <table>
         <tr><th>Exit Date</th><th>Ticker</th><th>Tier</th><th>Return</th><th>P/L</th><th>Reason</th></tr>
         ${recent.map(t => {
-          const pnl = (t.exit_price - t.entry_price) * t.shares - t.total_commission;
-          const retPct = ((t.exit_price - t.entry_price) / t.entry_price);
+          const pnl = tradePnl(t);
+          const retPct = tradeReturnPct(t);
           return `
             <tr>
               <td>${t.exit_date}</td>

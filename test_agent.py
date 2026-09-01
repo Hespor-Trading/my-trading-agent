@@ -97,6 +97,21 @@ def main():
     print("\n--- Resulting portfolio ---")
     paper_agent.show_status(agent)
 
+    print("\n--- Verifying volatility-based position sizing ---")
+    normal_pct = paper_agent.RISK_TIERS["core"]["position_size_pct"]
+    calm_pct = agent._position_size_pct("STEADY", "core")   # low vol -> near full size
+    wild_pct = agent._position_size_pct("WILD", "core")     # high vol -> should hit the ~50% floor
+    print(f"  STEADY (calm)  -> {calm_pct:.1%} of tier value  (normal {normal_pct:.1%})")
+    print(f"  WILD   (wild)  -> {wild_pct:.1%} of tier value  (normal {normal_pct:.1%})")
+
+    sizing_ok = (
+        normal_pct * 0.5 - 1e-9 <= wild_pct <= normal_pct + 1e-9
+        and normal_pct * 0.5 - 1e-9 <= calm_pct <= normal_pct + 1e-9
+        and wild_pct <= calm_pct
+    )
+    print("RESULT:", "sizing scales down with volatility, within bounds" if sizing_ok
+          else "VOLATILITY SIZING BROKEN -- BUG")
+
     print("\n--- Verifying tier capital limits held ---")
     prices = agent.current_prices(list(provider.profiles.keys()))
     total = agent.total_equity(prices)
