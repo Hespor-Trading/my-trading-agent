@@ -94,6 +94,32 @@ def annualized_volatility(prices: list[dict], days: int = 252) -> float:
     return statistics.stdev(returns) * (252 ** 0.5)
 
 
+def _daily_returns(prices: list[dict], days: int) -> list[float]:
+    recent = prices[-days:]
+    out = []
+    for i in range(1, len(recent)):
+        prev, curr = recent[i - 1]["close"], recent[i]["close"]
+        if prev > 0:
+            out.append((curr / prev) - 1)
+    return out
+
+
+def price_correlation(prices_a: list[dict], prices_b: list[dict], days: int = 60) -> Optional[float]:
+    """Pearson correlation of two tickers' daily returns over the trailing
+    `days` bars, aligned by position rather than calendar date -- simple on
+    purpose, and both price series are already-fetched data, no new API
+    calls. Returns None if there isn't enough overlapping history to make
+    the number meaningful."""
+    ra, rb = _daily_returns(prices_a, days), _daily_returns(prices_b, days)
+    n = min(len(ra), len(rb))
+    if n < 20:
+        return None
+    try:
+        return statistics.correlation(ra[-n:], rb[-n:])
+    except statistics.StatisticsError:
+        return None
+
+
 def return_over(prices: list[dict], days: int) -> Optional[float]:
     if len(prices) < days + 1:
         return None
@@ -225,7 +251,7 @@ def screen_universe(
         if tier is None:
             results["rejected"][ticker] = f"TIER: {detail}"
         else:
-            results[tier].append({"ticker": ticker, "detail": detail, "earnings": earnings})
+            results[tier].append({"ticker": ticker, "detail": detail, "earnings": earnings, "prices": prices})
 
     return results
 

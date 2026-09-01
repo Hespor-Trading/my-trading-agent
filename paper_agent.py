@@ -46,6 +46,7 @@ from screener import (
     moving_average,
     annualized_volatility,
     estimate_next_earnings_date,
+    price_correlation,
     TIER_RULES,
 )
 from news_check import check_news_sentiment
@@ -74,6 +75,7 @@ EXECUTION_ASSUMPTIONS = {
 
 MAX_PORTFOLIO_DRAWDOWN = 0.20
 MAX_EQUITY_HISTORY = 90
+MIN_HOLDING_DAYS = 3  # trend-break exits are blocked before this; stop-loss never is
 
 WATCHLIST = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "AMD", "AVGO", "ORCL", "CRM",
@@ -99,6 +101,7 @@ SECTOR = {
 }
 
 MAX_SECTOR_PCT_OF_TIER = 0.40
+CORRELATION_THRESHOLD = 0.75
 
 ROTATION_BATCH_SIZE = 6
 
@@ -266,6 +269,17 @@ class PaperAgent:
         self.provider = provider
         self.fundamentals_lookup = fundamentals_lookup
         self.state = load_state()
+        self._price_history_cache: dict[tuple[str, str], list[dict]] = {}
+
+    def price_history(self, ticker: str, start: str) -> list[dict]:
+        """Thin cache over provider.get_daily_prices(). Several checks in one
+        run (exit trend, position sizing, correlation) all want the same
+        ticker's full history -- fetch each (ticker, start) pair at most
+        once per run rather than re-hitting a rate-limited free API."""
+        key = (ticker, start)
+        if key not in self._price_history_cache:
+            self._price_history_cache[key] = self.provider.get_daily_prices(ticker, start)
+        return self._price_history_cache[key]
 
     def current_prices(self, tickers: list[str]) -> dict[str, float]:
         prices = {}
@@ -300,12 +314,15 @@ class PaperAgent:
             pos.high_water_mark = max(pos.high_water_mark, price)
             pos.stop_price = pos.high_water_mark * (1 - RISK_TIERS[pos.tier]["stop_loss_pct"])
 
+            # A stop-loss must always be able to fire, no matter how fresh the
+            # position is. The minimum-holding gate below only ever applies to
+            # the trend-break exit, so normal day-1 noise can't shake us out.
             reason = None
             if price <= pos.stop_price:
                 reason = "stop_loss"
-            else:
+            elif self._days_held(pos) >= MIN_HOLDING_DAYS:
                 try:
-                    rows = self.provider.get_daily_prices(pos.ticker, "2020-01-01")
+                    rows = self.price_history(pos.ticker, "2020-01-01")
                     fast = moving_average(rows, 50)
                     slow = moving_average(rows, 200)
                     if fast is not None and slow is not None and fast < slow:
@@ -315,6 +332,12 @@ class PaperAgent:
 
             if reason:
                 self._close(pos, price, reason)
+
+    @staticmethod
+    def _days_held(pos: PaperPosition) -> int:
+        entry = datetime.strptime(pos.entry_date, "%Y-%m-%d")
+        today = datetime.strptime(_today(), "%Y-%m-%d")
+        return (today - entry).days
 
     def _close(self, pos: PaperPosition, quoted_price: float, reason: str):
         fill = simulate_fill(quoted_price, pos.tier, "sell")
@@ -390,7 +413,7 @@ class PaperAgent:
                         log(f"SKIP {ticker}: negative news flag -- {news['summary']}")
                         continue
 
-                if self._open(ticker, tier, price, prices):
+                if self._open(ticker, tier, price, prices, entry.get("prices", [])):
                     counts[tier] += 1
 
     def cached_fundamentals_lookup(self, ticker: str) -> dict:
@@ -416,7 +439,7 @@ class PaperAgent:
         size rather than blocking or shrinking the trade on a data hiccup."""
         normal_pct = RISK_TIERS[tier]["position_size_pct"]
         try:
-            rows = self.provider.get_daily_prices(ticker, "2020-01-01")
+            rows = self.price_history(ticker, "2020-01-01")
             vol = annualized_volatility(rows, days=60)
         except Exception as e:
             log(f"WARN volatility lookup failed for {ticker}: {e}")
@@ -428,8 +451,25 @@ class PaperAgent:
         log(f"Sizing {ticker} at {pct:.1%} of normal (volatility {vol:.0%})")
         return normal_pct * pct
 
-    def _open(self, ticker: str, tier: str, quoted_price: float, prices: dict) -> bool:
+    def _open(self, ticker: str, tier: str, quoted_price: float, prices: dict,
+              candidate_prices: list[dict] = None) -> bool:
         cfg = RISK_TIERS[tier]
+
+        if candidate_prices:
+            for held in self.state.positions:
+                if held.tier != tier:
+                    continue
+                try:
+                    held_prices = self.price_history(held.ticker, "2020-01-01")
+                except Exception as e:
+                    log(f"WARN correlation check failed for {ticker} vs {held.ticker}: {e}")
+                    continue
+                corr = price_correlation(candidate_prices, held_prices)
+                if corr is not None and corr > CORRELATION_THRESHOLD:
+                    log(f"SKIP {ticker}: highly correlated with already-held {held.ticker} "
+                        f"(corr={corr:.2f})")
+                    return False
+
         tier_val = self.tier_equity(tier, prices)
         alloc = tier_val * self._position_size_pct(ticker, tier)
         commission = EXECUTION_ASSUMPTIONS["commission_per_trade"]

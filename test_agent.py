@@ -10,7 +10,7 @@ import math
 import random
 from datetime import datetime, timezone, timedelta
 import paper_agent
-from screener import passes_liquidity, has_momentum, assign_tier, annualized_volatility
+from screener import passes_liquidity, has_momentum, assign_tier, annualized_volatility, price_correlation
 
 
 class MockProvider:
@@ -132,6 +132,46 @@ def main():
     blackout_ok = near_result is not None and far_result is None and none_result is None
     print("RESULT:", "earnings blackout logic correct" if blackout_ok
           else "EARNINGS BLACKOUT LOGIC BROKEN -- BUG")
+
+    print("\n--- Verifying minimum holding period ---")
+    fresh_pos = paper_agent.PaperPosition(
+        ticker="STEADY", tier="core", entry_price=100.0, entry_date=paper_agent._today(),
+        shares=10.0, stop_price=90.0, commission_paid=1.0, high_water_mark=100.0,
+    )
+    old_pos = paper_agent.PaperPosition(
+        ticker="STEADY", tier="core", entry_price=100.0,
+        entry_date=(datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d"),
+        shares=10.0, stop_price=90.0, commission_paid=1.0, high_water_mark=100.0,
+    )
+    fresh_days = paper_agent.PaperAgent._days_held(fresh_pos)
+    old_days = paper_agent.PaperAgent._days_held(old_pos)
+    print(f"  opened today      -> {fresh_days} days held (trend-break blocked: {fresh_days < paper_agent.MIN_HOLDING_DAYS})")
+    print(f"  opened 10 days ago -> {old_days} days held (trend-break blocked: {old_days < paper_agent.MIN_HOLDING_DAYS})")
+
+    holding_ok = fresh_days == 0 and fresh_days < paper_agent.MIN_HOLDING_DAYS and old_days >= paper_agent.MIN_HOLDING_DAYS
+    print("RESULT:", "minimum holding period gate correct" if holding_ok
+          else "MINIMUM HOLDING PERIOD BROKEN -- BUG")
+
+    print("\n--- Verifying correlation-based diversification check ---")
+    steady_prices = provider.get_daily_prices("STEADY", "2000-01-01")
+    momo_prices = provider.get_daily_prices("MOMO", "2000-01-01")
+    # Same returns as STEADY, just rescaled -- correlation is invariant to
+    # scale, so this should read as ~1.00 regardless of the randomness above.
+    clone_prices = [{**row, "close": row["close"] * 2.0} for row in steady_prices]
+
+    corr_same = price_correlation(steady_prices, clone_prices)
+    corr_diff = price_correlation(steady_prices, momo_prices)
+    print(f"  STEADY vs. a rescaled clone of itself -> corr={corr_same:.2f} "
+          f"(expect ~1.00, above {paper_agent.CORRELATION_THRESHOLD})")
+    print(f"  STEADY vs. MOMO (independent series)  -> corr={corr_diff:.2f} "
+          f"(expect well below {paper_agent.CORRELATION_THRESHOLD})")
+
+    correlation_ok = (
+        corr_same is not None and corr_same > paper_agent.CORRELATION_THRESHOLD
+        and corr_diff is not None and corr_diff < paper_agent.CORRELATION_THRESHOLD
+    )
+    print("RESULT:", "correlation check correct" if correlation_ok
+          else "CORRELATION CHECK BROKEN -- BUG")
 
     print("\n--- Verifying tier capital limits held ---")
     prices = agent.current_prices(list(provider.profiles.keys()))
