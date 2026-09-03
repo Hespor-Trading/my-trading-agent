@@ -8,8 +8,8 @@
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-02 23:32:59 UTC",
-  "rotation_index": 4,
+  "last_run": "2026-09-03 23:29:47 UTC",
+  "rotation_index": 10,
   "fundamentals_cache": {},
   "equity_history": [
     {
@@ -30,6 +30,10 @@
     },
     {
       "date": "2026-09-02",
+      "equity": 100000.0
+    },
+    {
+      "date": "2026-09-03",
       "equity": 100000.0
     }
   ]
