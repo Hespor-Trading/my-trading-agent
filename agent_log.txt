@@ -96,3 +96,17 @@
 [2026-09-06 06:35:48 UTC] SKIP BNS.TO: TIER: no market cap data
 [2026-09-06 06:35:49 UTC] RUN COMPLETE. Equity $100,000.00 (+0.00% since inception)
 [2026-09-06 06:35:49 UTC] =======================================================
+[2026-09-06 06:42:52 UTC] WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today
+[2026-09-06 06:42:52 UTC] =======================================================
+[2026-09-06 06:42:52 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-06 06:42:54 UTC] Screening 6 candidates (rotating through 38-stock watchlist): BMO.TO, CP.TO, SU.TO, TRI.TO, AAPL, MSFT
+[2026-09-06 06:43:37 UTC] SKIP BMO.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-06 06:43:37 UTC] SKIP CP.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-06 06:43:37 UTC] SKIP SU.TO: TIER: fails all tiers: cap=$110.0B vol=27% earnings_qtrs=0
+[2026-09-06 06:43:37 UTC] SKIP TRI.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-06 06:43:37 UTC] Sizing AAPL at 54.5% of normal (volatility 32%)
+[2026-09-06 06:43:37 UTC] BUY  AAPL [core] 8.50 sh @ $320.13 = $2,722.53, stop $300.92
+[2026-09-06 06:43:37 UTC] Sizing MSFT at 50.0% of normal (volatility 44%)
+[2026-09-06 06:43:37 UTC] BUY  MSFT [core] 5.00 sh @ $499.95 = $2,499.88, stop $469.95
+[2026-09-06 06:43:38 UTC] RUN COMPLETE. Equity $99,995.39 (-0.00% since inception)
+[2026-09-06 06:43:38 UTC] =======================================================
