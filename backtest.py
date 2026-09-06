@@ -24,14 +24,24 @@ DATA SOURCE:
   This script is written against a generic `DataProvider` interface so you
   can plug in whichever source you have access to:
     - Alpha Vantage (free tier, https://www.alphavantage.co/support/#api-key)
-      -- what paper_agent.py uses. Free tier is capped at 25 calls/day, but
-      it covers Canadian TSX tickers (SHOP.TO, RY.TO, etc.), which matters
-      since WATCHLIST includes them.
+      -- capped at 25 calls/day, and its free "compact" mode caps daily
+      history at 100 bars (not enough for a 200-day moving average;
+      "full" history is a paid-plan-only feature). Still used for earnings
+      and market cap, which aren't subject to that cap.
     - Finnhub (free tier, 60 calls/minute, https://finnhub.io/docs/api) --
-      no daily cap, but its free tier is US-exchange-only, which silently
-      drops Canadian coverage. Wired into paper_agent.py as a fallback for
-      when Alpha Vantage errors or hits its 25-calls/day cap (see
-      FallbackProvider below).
+      no daily cap, but its free tier no longer serves historical daily
+      candles at all (/stock/candle now 403s on a free key) and is
+      US-exchange-only, dropping Canadian coverage. Used only as a
+      fallback for earnings/market cap when Alpha Vantage errors or hits
+      its 25-calls/day cap (see FallbackProvider below).
+    - yfinance (free, no API key, https://github.com/ranaroussi/yfinance)
+      -- unofficial (scrapes Yahoo Finance), but has no bar-count cap and
+      covers Canadian tickers under the same ".TO" suffix WATCHLIST
+      already uses. This is what paper_agent.py uses for all historical
+      daily bars (see YFinanceProvider below) -- Yahoo's endpoints do
+      rate-limit or block high-volume/cloud traffic sometimes, which
+      surfaces as a normal per-ticker fetch failure like any other
+      provider error.
     - IBKR historical data API (best if you're heading toward IBKR live trading)
     - A local CSV export from your broker
 
@@ -293,6 +303,58 @@ class FallbackProvider(DataProvider):
         return self._try("market cap", ticker,
                           lambda: self.primary.get_market_cap(ticker),
                           lambda: self.fallback.get_market_cap(ticker))
+
+
+class YFinanceProvider(DataProvider):
+    """Historical daily bars via yfinance (Yahoo Finance) -- free, no API
+    key, no bar-count cap the way Alpha Vantage's free "compact" mode
+    (100 bars) and Finnhub's free tier (no historical candles at all) are.
+    Yahoo's endpoints are unofficial and can rate-limit or block
+    high-volume/cloud traffic; a failure here is a normal exception, same
+    as any other DataProvider, so callers already handle it (WARN, skip
+    that ticker for this run).
+
+    Only implements get_daily_prices() -- earnings and market cap still
+    come from Alpha Vantage/Finnhub. See SplitProvider."""
+
+    def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
+        import yfinance as yf
+
+        df = yf.Ticker(ticker).history(start=start, interval="1d", auto_adjust=False)
+        if df.empty:
+            raise RuntimeError(f"No price data for {ticker} from yfinance")
+        rows = []
+        for date, row in df.iterrows():
+            rows.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "open": float(row["Open"]),
+                "high": float(row["High"]),
+                "low": float(row["Low"]),
+                "close": float(row["Close"]),
+                "volume": int(row["Volume"]),
+            })
+        return rows
+
+
+class SplitProvider(DataProvider):
+    """Routes get_daily_prices() to one provider and get_earnings()/
+    get_market_cap() to another, so the price-history source and the
+    fundamentals source can be swapped independently. Used by
+    paper_agent.py as YFinanceProvider (prices) + FallbackProvider of
+    Alpha Vantage/Finnhub (earnings, market cap)."""
+
+    def __init__(self, prices: DataProvider, fundamentals: DataProvider):
+        self.prices = prices
+        self.fundamentals = fundamentals
+
+    def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
+        return self.prices.get_daily_prices(ticker, start)
+
+    def get_earnings(self, ticker: str) -> list[dict]:
+        return self.fundamentals.get_earnings(ticker)
+
+    def get_market_cap(self, ticker: str) -> Optional[float]:
+        return self.fundamentals.get_market_cap(ticker)
 
 
 def _safe_float(x) -> Optional[float]:

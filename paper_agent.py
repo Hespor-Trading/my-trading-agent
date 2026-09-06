@@ -644,22 +644,28 @@ def show_history(agent: "PaperAgent"):
 # ---------------------------------------------------------------------------
 
 def build_provider():
-    from backtest import AlphaVantageProvider, FinnhubProvider, FallbackProvider, ALPHA_VANTAGE_API_KEY, FINNHUB_API_KEY
+    from backtest import (
+        AlphaVantageProvider, FinnhubProvider, FallbackProvider,
+        YFinanceProvider, SplitProvider,
+        ALPHA_VANTAGE_API_KEY, FINNHUB_API_KEY,
+    )
 
     if ALPHA_VANTAGE_API_KEY == "YOUR_FREE_KEY_HERE":
         raise SystemExit(
             "Set ALPHA_VANTAGE_API_KEY in backtest.py first.\n"
             "Free key: https://www.alphavantage.co/support/#api-key\n\n"
-            "NOTE: the free tier (25 calls/day) is too small to run this agent\n"
-            "over a full universe daily. For real paper trading you need either\n"
-            "a paid tier or IBKR's data feed."
+            "NOTE: still needed for earnings/market cap lookups, even though\n"
+            "historical daily bars now come from yfinance."
         )
-    primary = AlphaVantageProvider(ALPHA_VANTAGE_API_KEY)
+    alpha_vantage = AlphaVantageProvider(ALPHA_VANTAGE_API_KEY)
 
     if not FINNHUB_API_KEY or FINNHUB_API_KEY == "YOUR_FREE_KEY_HERE":
         log("WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today")
-        return primary
-    return FallbackProvider(primary, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
+        fundamentals = alpha_vantage
+    else:
+        fundamentals = FallbackProvider(alpha_vantage, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
+
+    return SplitProvider(prices=YFinanceProvider(), fundamentals=fundamentals)
 
 
 def build_fundamentals_lookup(provider):
