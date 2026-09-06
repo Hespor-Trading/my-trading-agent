@@ -50,3 +50,15 @@
 [2026-09-04 23:12:40 UTC] Screening 6 candidates (rotating through 38-stock watchlist): JPM, V, MA, COST, HD, UNH
 [2026-09-04 23:13:59 UTC] RUN COMPLETE. Equity $100,000.00 (+0.00% since inception)
 [2026-09-04 23:13:59 UTC] =======================================================
+[2026-09-06 03:30:11 UTC] WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today
+[2026-09-06 03:30:11 UTC] =======================================================
+[2026-09-06 03:30:11 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-06 03:31:30 UTC] Screening 6 candidates (rotating through 38-stock watchlist): LLY, XOM, CVX, PG, NOW, PANW
+[2026-09-06 03:32:49 UTC] SKIP LLY: MOMENTUM: insufficient price history for moving averages
+[2026-09-06 03:32:49 UTC] SKIP XOM: MOMENTUM: insufficient price history for moving averages
+[2026-09-06 03:32:49 UTC] SKIP CVX: MOMENTUM: insufficient price history for moving averages
+[2026-09-06 03:32:49 UTC] SKIP PG: MOMENTUM: insufficient price history for moving averages
+[2026-09-06 03:32:49 UTC] SKIP NOW: MOMENTUM: insufficient price history for moving averages
+[2026-09-06 03:32:49 UTC] SKIP PANW: MOMENTUM: insufficient price history for moving averages
+[2026-09-06 03:33:02 UTC] RUN COMPLETE. Equity $100,000.00 (+0.00% since inception)
+[2026-09-06 03:33:02 UTC] =======================================================
