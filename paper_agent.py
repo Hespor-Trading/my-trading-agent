@@ -661,11 +661,12 @@ def build_provider():
 
     if not FINNHUB_API_KEY or FINNHUB_API_KEY == "YOUR_FREE_KEY_HERE":
         log("WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today")
-        fundamentals = alpha_vantage
+        earnings = alpha_vantage
     else:
-        fundamentals = FallbackProvider(alpha_vantage, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
+        earnings = FallbackProvider(alpha_vantage, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
 
-    return SplitProvider(prices=YFinanceProvider(), fundamentals=fundamentals)
+    yfinance_provider = YFinanceProvider()
+    return SplitProvider(prices=yfinance_provider, earnings=earnings, market_cap=yfinance_provider)
 
 
 def build_fundamentals_lookup(provider):

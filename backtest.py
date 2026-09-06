@@ -314,8 +314,12 @@ class YFinanceProvider(DataProvider):
     as any other DataProvider, so callers already handle it (WARN, skip
     that ticker for this run).
 
-    Only implements get_daily_prices() -- earnings and market cap still
-    come from Alpha Vantage/Finnhub. See SplitProvider."""
+    Also supplies get_market_cap() -- Alpha Vantage's OVERVIEW endpoint
+    returns no MarketCapitalization at all for several TSX tickers
+    (SHOP.TO, CNQ.TO, BNS.TO confirmed), which isn't an error so the
+    Alpha Vantage/Finnhub fallback never kicks in for it; yfinance has the
+    data for all of them. Earnings still come from Alpha Vantage/Finnhub.
+    See SplitProvider."""
 
     def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
         import yfinance as yf
@@ -335,26 +339,32 @@ class YFinanceProvider(DataProvider):
             })
         return rows
 
+    def get_market_cap(self, ticker: str) -> Optional[float]:
+        import yfinance as yf
+
+        mc = yf.Ticker(ticker).info.get("marketCap")
+        return float(mc) if mc is not None else None
+
 
 class SplitProvider(DataProvider):
-    """Routes get_daily_prices() to one provider and get_earnings()/
-    get_market_cap() to another, so the price-history source and the
-    fundamentals source can be swapped independently. Used by
-    paper_agent.py as YFinanceProvider (prices) + FallbackProvider of
-    Alpha Vantage/Finnhub (earnings, market cap)."""
+    """Routes each kind of data to whichever provider actually supplies it
+    well, so the price, earnings, and market-cap sources can each be
+    swapped independently. Used by paper_agent.py as: yfinance for prices
+    and market cap, Alpha Vantage (Finnhub fallback) for earnings."""
 
-    def __init__(self, prices: DataProvider, fundamentals: DataProvider):
+    def __init__(self, prices: DataProvider, earnings: DataProvider, market_cap: DataProvider):
         self.prices = prices
-        self.fundamentals = fundamentals
+        self.earnings_source = earnings
+        self.market_cap_source = market_cap
 
     def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
         return self.prices.get_daily_prices(ticker, start)
 
     def get_earnings(self, ticker: str) -> list[dict]:
-        return self.fundamentals.get_earnings(ticker)
+        return self.earnings_source.get_earnings(ticker)
 
     def get_market_cap(self, ticker: str) -> Optional[float]:
-        return self.fundamentals.get_market_cap(ticker)
+        return self.market_cap_source.get_market_cap(ticker)
 
 
 def _safe_float(x) -> Optional[float]:
