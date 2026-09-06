@@ -1,7 +1,7 @@
 {
   "cash_by_tier": {
     "core": 44775.584394961996,
-    "growth": 30000.0,
+    "growth": 28418.384204041726,
     "aggressive": 20000.0
   },
   "positions": [
@@ -24,13 +24,23 @@
       "stop_price": 469.95287048034663,
       "commission_paid": 1.0,
       "high_water_mark": 499.94986221313474
+    },
+    {
+      "ticker": "NVDA",
+      "tier": "growth",
+      "entry_price": 230.59036061096188,
+      "entry_date": "2026-09-06",
+      "shares": 6.854648181174384,
+      "stop_price": 212.14313176208495,
+      "commission_paid": 1.0,
+      "high_water_mark": 230.59036061096188
     }
   ],
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-06 06:43:37 UTC",
-  "rotation_index": 2,
+  "last_run": "2026-09-06 06:52:24 UTC",
+  "rotation_index": 8,
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -43,6 +53,10 @@
     "MSFT": {
       "market_cap": 3710545297408.0,
       "cached_on": "2026-09-06T06:43:37.252462+00:00"
+    },
+    "NVDA": {
+      "market_cap": 5562502742016.0,
+      "cached_on": "2026-09-06T06:52:22.882152+00:00"
     }
   },
   "equity_history": [
@@ -99,6 +113,11 @@
     {
       "date": "2026-09-06",
       "equity": 99995.3900971489,
+      "spy_benchmark": 100409.36
+    },
+    {
+      "date": "2026-09-06",
+      "equity": 99992.81106038971,
       "spy_benchmark": 100409.36
     }
   ]
