@@ -512,6 +512,35 @@ class PaperAgent:
             f"= ${shares*fill:,.2f}, stop ${pos.stop_price:.2f}")
         return True
 
+    def _attach_spy_benchmark(self):
+        """Backfills every equity_history entry with `spy_benchmark`: what
+        the same $100k would be worth if it had bought and held SPY on day
+        one instead, normalized to the same starting point so the dashboard
+        can plot it against the agent's own equity curve. Recomputed from
+        scratch each run (cheap -- one price fetch) so it self-heals if a
+        past run's fetch failed or MAX_EQUITY_HISTORY has since trimmed
+        which dates are in view."""
+        if not self.state.equity_history:
+            return
+        try:
+            rows = self.provider.get_daily_prices("SPY", "2000-01-01")
+        except Exception as e:
+            log(f"WARN could not fetch SPY benchmark data: {e}")
+            return
+
+        closes = {r["date"]: r["close"] for r in rows}
+        dates = sorted(closes)
+        if not dates:
+            return
+
+        def close_on_or_before(target: str) -> float:
+            eligible = [d for d in dates if d <= target]
+            return closes[eligible[-1]] if eligible else closes[dates[0]]
+
+        base = close_on_or_before(self.state.equity_history[0]["date"])
+        for h in self.state.equity_history:
+            h["spy_benchmark"] = round(STARTING_CAPITAL * (close_on_or_before(h["date"]) / base), 2)
+
     def run_once(self):
         log("=" * 55)
         log("PAPER TRADING RUN START (no real money)")
@@ -533,6 +562,7 @@ class PaperAgent:
         equity = self.total_equity(prices)
         self.state.equity_history.append({"date": _today(), "equity": equity})
         self.state.equity_history = self.state.equity_history[-MAX_EQUITY_HISTORY:]
+        self._attach_spy_benchmark()
 
         save_state(self.state)
 

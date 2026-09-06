@@ -502,30 +502,52 @@ function renderEquityChart(history) {
     equityChartInstance.destroy();
   }
 
+  const datasets = [{
+    label: 'Portfolio',
+    data: history.map(h => h.equity),
+    borderColor: '#58a6ff',
+    backgroundColor: 'rgba(88,166,255,0.12)',
+    borderWidth: 2,
+    pointRadius: 0,
+    pointHoverRadius: 4,
+    pointHoverBackgroundColor: '#58a6ff',
+    tension: 0.25,
+    fill: true,
+  }];
+
+  if (history.some(h => typeof h.spy_benchmark === 'number')) {
+    datasets.push({
+      label: 'S&P 500 (SPY)',
+      data: history.map(h => h.spy_benchmark ?? null),
+      borderColor: '#9198a1',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderDash: [4, 3],
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      pointHoverBackgroundColor: '#9198a1',
+      tension: 0.25,
+      fill: false,
+    });
+  }
+
   equityChartInstance = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: {
       labels: history.map(h => h.date),
-      datasets: [{
-        data: history.map(h => h.equity),
-        borderColor: '#58a6ff',
-        backgroundColor: 'rgba(88,166,255,0.12)',
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        pointHoverBackgroundColor: '#58a6ff',
-        tension: 0.25,
-        fill: true,
-      }],
+      datasets,
     },
     options: {
       maintainAspectRatio: false,
       interaction: { intersect: false, mode: 'index' },
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: datasets.length > 1,
+          labels: { color: '#9198a1', font: { size: 11 }, boxWidth: 16 },
+        },
         tooltip: {
           callbacks: {
-            label: ctx => '$' + fmt(ctx.parsed.y),
+            label: ctx => `${ctx.dataset.label}: $${fmt(ctx.parsed.y)}`,
           },
         },
       },
