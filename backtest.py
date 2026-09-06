@@ -155,10 +155,14 @@ class AlphaVantageProvider(DataProvider):
             raise RuntimeError(f"Data fetch failed for {params}: {e}")
 
     def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
+        # "compact" (the default) caps out at the last 100 daily bars --
+        # not enough for a 200-day moving average, which silently rejected
+        # every candidate on the momentum check no matter what. Same API
+        # call cost either way; "full" just returns more history.
         data = self._get({
             "function": "TIME_SERIES_DAILY",
             "symbol": ticker,
-            "outputsize": "compact",
+            "outputsize": "full",
         })
         series = data.get("Time Series (Daily)", {})
         if not series:
