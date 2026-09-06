@@ -391,6 +391,9 @@ class PaperAgent:
             f"{', '.join(candidates)}")
         results = screen_universe(candidates, self.provider, self.cached_fundamentals_lookup)
 
+        for ticker, reason in results["rejected"].items():
+            log(f"SKIP {ticker}: {reason}")
+
         counts = {tier: sum(1 for p in self.state.positions if p.tier == tier) for tier in RISK_TIERS}
 
         for tier in ("core", "growth", "aggressive"):
