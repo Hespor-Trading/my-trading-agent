@@ -420,8 +420,12 @@ class PaperAgent:
                     counts[tier] += 1
 
     def cached_fundamentals_lookup(self, ticker: str) -> dict:
+        # A cached None means the lookup found nothing last time, not that
+        # the market cap actually is unknown for 30 days -- re-check every
+        # run until a real value comes back (e.g. after a data-source fix
+        # or a transient provider failure), instead of locking in the miss.
         cached = self.state.fundamentals_cache.get(ticker)
-        if cached:
+        if cached and cached["market_cap"] is not None:
             cached_on = datetime.fromisoformat(cached["cached_on"])
             age_days = (datetime.now(timezone.utc) - cached_on).days
             if age_days < 30:

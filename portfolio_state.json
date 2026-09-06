@@ -32,18 +32,6 @@
   "last_run": "2026-09-06 06:43:37 UTC",
   "rotation_index": 2,
   "fundamentals_cache": {
-    "SHOP.TO": {
-      "market_cap": null,
-      "cached_on": "2026-09-06T06:35:19.948529+00:00"
-    },
-    "CNQ.TO": {
-      "market_cap": null,
-      "cached_on": "2026-09-06T06:35:34.689900+00:00"
-    },
-    "BNS.TO": {
-      "market_cap": null,
-      "cached_on": "2026-09-06T06:35:48.954744+00:00"
-    },
     "SU.TO": {
       "market_cap": 109974609920.0,
       "cached_on": "2026-09-06T06:43:09.423287+00:00"
