@@ -84,3 +84,15 @@
 [2026-09-06 03:42:24 UTC] SKIP SHOP: MOMENTUM: insufficient price history for moving averages
 [2026-09-06 03:42:37 UTC] RUN COMPLETE. Equity $100,000.00 (+0.00% since inception)
 [2026-09-06 03:42:37 UTC] =======================================================
+[2026-09-06 06:35:04 UTC] WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today
+[2026-09-06 06:35:04 UTC] =======================================================
+[2026-09-06 06:35:04 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-06 06:35:06 UTC] Screening 6 candidates (rotating through 38-stock watchlist): SHOP.TO, RY.TO, TD.TO, CNQ.TO, ENB.TO, BNS.TO
+[2026-09-06 06:35:48 UTC] SKIP SHOP.TO: TIER: no market cap data
+[2026-09-06 06:35:48 UTC] SKIP RY.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-06 06:35:48 UTC] SKIP TD.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-06 06:35:48 UTC] SKIP CNQ.TO: TIER: no market cap data
+[2026-09-06 06:35:48 UTC] SKIP ENB.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-06 06:35:48 UTC] SKIP BNS.TO: TIER: no market cap data
+[2026-09-06 06:35:49 UTC] RUN COMPLETE. Equity $100,000.00 (+0.00% since inception)
+[2026-09-06 06:35:49 UTC] =======================================================

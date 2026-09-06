@@ -8,9 +8,22 @@
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-06 03:42:24 UTC",
-  "rotation_index": 28,
-  "fundamentals_cache": {},
+  "last_run": "2026-09-06 06:35:48 UTC",
+  "rotation_index": 34,
+  "fundamentals_cache": {
+    "SHOP.TO": {
+      "market_cap": null,
+      "cached_on": "2026-09-06T06:35:19.948529+00:00"
+    },
+    "CNQ.TO": {
+      "market_cap": null,
+      "cached_on": "2026-09-06T06:35:34.689900+00:00"
+    },
+    "BNS.TO": {
+      "market_cap": null,
+      "cached_on": "2026-09-06T06:35:48.954744+00:00"
+    }
+  },
   "equity_history": [
     {
       "date": "2026-08-31",
@@ -25,12 +38,12 @@
     {
       "date": "2026-09-01",
       "equity": 100000.0,
-      "spy_benchmark": 99312.95
+      "spy_benchmark": 99312.96
     },
     {
       "date": "2026-09-01",
       "equity": 100000.0,
-      "spy_benchmark": 99312.95
+      "spy_benchmark": 99312.96
     },
     {
       "date": "2026-09-02",
@@ -44,6 +57,11 @@
     },
     {
       "date": "2026-09-04",
+      "equity": 100000.0,
+      "spy_benchmark": 100409.36
+    },
+    {
+      "date": "2026-09-06",
       "equity": 100000.0,
       "spy_benchmark": 100409.36
     },
