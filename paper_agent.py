@@ -614,7 +614,7 @@ def show_history(agent: "PaperAgent"):
 # ---------------------------------------------------------------------------
 
 def build_provider():
-    from backtest import AlphaVantageProvider, ALPHA_VANTAGE_API_KEY
+    from backtest import AlphaVantageProvider, FinnhubProvider, FallbackProvider, ALPHA_VANTAGE_API_KEY, FINNHUB_API_KEY
 
     if ALPHA_VANTAGE_API_KEY == "YOUR_FREE_KEY_HERE":
         raise SystemExit(
@@ -624,7 +624,12 @@ def build_provider():
             "over a full universe daily. For real paper trading you need either\n"
             "a paid tier or IBKR's data feed."
         )
-    return AlphaVantageProvider(ALPHA_VANTAGE_API_KEY)
+    primary = AlphaVantageProvider(ALPHA_VANTAGE_API_KEY)
+
+    if not FINNHUB_API_KEY or FINNHUB_API_KEY == "YOUR_FREE_KEY_HERE":
+        log("WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today")
+        return primary
+    return FallbackProvider(primary, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
 
 
 def build_fundamentals_lookup(provider):
@@ -634,9 +639,7 @@ def build_fundamentals_lookup(provider):
         if ticker in cache:
             return cache[ticker]
         try:
-            data = provider._get({"function": "OVERVIEW", "symbol": ticker})
-            mc = data.get("MarketCapitalization")
-            cache[ticker] = {"market_cap": float(mc) if mc and mc != "None" else None}
+            cache[ticker] = {"market_cap": provider.get_market_cap(ticker)}
         except Exception as e:
             log(f"WARN fundamentals lookup failed for {ticker}: {e}")
             cache[ticker] = {"market_cap": None}

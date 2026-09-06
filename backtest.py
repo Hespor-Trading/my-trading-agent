@@ -29,8 +29,9 @@ DATA SOURCE:
       since WATCHLIST includes them.
     - Finnhub (free tier, 60 calls/minute, https://finnhub.io/docs/api) --
       no daily cap, but its free tier is US-exchange-only, which silently
-      drops Canadian coverage. Kept here as an option, not currently wired
-      into paper_agent.py.
+      drops Canadian coverage. Wired into paper_agent.py as a fallback for
+      when Alpha Vantage errors or hits its 25-calls/day cap (see
+      FallbackProvider below).
     - IBKR historical data API (best if you're heading toward IBKR live trading)
     - A local CSV export from your broker
 
@@ -188,12 +189,18 @@ class AlphaVantageProvider(DataProvider):
         time.sleep(13)
         return rows
 
+    def get_market_cap(self, ticker: str) -> Optional[float]:
+        data = self._get({"function": "OVERVIEW", "symbol": ticker})
+        mc = data.get("MarketCapitalization")
+        return float(mc) if mc and mc != "None" else None
+
 
 class FinnhubProvider(DataProvider):
-    """Free tier: 60 calls/minute, no daily cap. NOT currently used by
-    paper_agent.py -- its free tier only covers US-listed exchanges, which
-    would silently drop the Canadian tickers (.TO) in WATCHLIST. Kept here
-    as an available option; Alpha Vantage remains the active provider.
+    """Free tier: 60 calls/minute, no daily cap. Used by paper_agent.py as a
+    fallback when Alpha Vantage errors or rate-limits (see FallbackProvider
+    below) -- its free tier only covers US-listed exchanges, so it can't
+    rescue the Canadian (.TO) tickers in WATCHLIST if Alpha Vantage fails
+    for those specifically.
     Docs: https://finnhub.io/docs/api"""
 
     def __init__(self, api_key: str):
@@ -242,13 +249,50 @@ class FinnhubProvider(DataProvider):
         } for e in data]
 
     def get_market_cap(self, ticker: str) -> Optional[float]:
-        """Not part of the DataProvider interface -- fundamentals glue that
-        paper_agent.py's build_fundamentals_lookup() calls directly."""
-        data = self._get("/stock/metric", {"symbol": ticker, "metric": "all"})
-        mc = (data.get("metric") or {}).get("marketCapitalization")
+        data = (self._get("/stock/metric", {"symbol": ticker, "metric": "all"})
+                .get("metric") or {}).get("marketCapitalization")
         # Finnhub reports this in millions; normalize to raw dollars so it's
         # comparable to TIER_RULES' min_market_cap thresholds.
-        return float(mc) * 1_000_000 if mc is not None else None
+        return float(data) * 1_000_000 if data is not None else None
+
+
+class FallbackProvider(DataProvider):
+    """Tries the primary provider first; falls back to the secondary one
+    only when the primary raises (a network error, an invalid-symbol
+    response, or Alpha Vantage's free-tier rate limit, which surfaces as a
+    normal-looking response with no price data rather than an HTTP error).
+
+    Used by paper_agent.py as AlphaVantageProvider-then-FinnhubProvider.
+    Finnhub can't cover Canadian (.TO) tickers on its free tier, so for
+    those a primary failure is still a failure -- this only rescues the
+    US-listed names in WATCHLIST."""
+
+    def __init__(self, primary: DataProvider, fallback: DataProvider, log_fn=print):
+        self.primary = primary
+        self.fallback = fallback
+        self._log = log_fn
+
+    def _try(self, what: str, ticker: str, primary_call, fallback_call):
+        try:
+            return primary_call()
+        except Exception as e:
+            self._log(f"WARN Alpha Vantage {what} failed for {ticker} ({e}); trying Finnhub fallback")
+            return fallback_call()
+
+    def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
+        return self._try("prices", ticker,
+                          lambda: self.primary.get_daily_prices(ticker, start),
+                          lambda: self.fallback.get_daily_prices(ticker, start))
+
+    def get_earnings(self, ticker: str) -> list[dict]:
+        return self._try("earnings", ticker,
+                          lambda: self.primary.get_earnings(ticker),
+                          lambda: self.fallback.get_earnings(ticker))
+
+    def get_market_cap(self, ticker: str) -> Optional[float]:
+        return self._try("market cap", ticker,
+                          lambda: self.primary.get_market_cap(ticker),
+                          lambda: self.fallback.get_market_cap(ticker))
 
 
 def _safe_float(x) -> Optional[float]:
