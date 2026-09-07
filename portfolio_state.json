@@ -39,8 +39,8 @@
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-06 06:52:24 UTC",
-  "rotation_index": 8,
+  "last_run": "2026-09-07 23:40:33 UTC",
+  "rotation_index": 14,
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -57,6 +57,14 @@
     "NVDA": {
       "market_cap": 5562502742016.0,
       "cached_on": "2026-09-06T06:52:22.882152+00:00"
+    },
+    "V": {
+      "market_cap": 700273459200.0,
+      "cached_on": "2026-09-07T23:40:17.345023+00:00"
+    },
+    "MA": {
+      "market_cap": 507393736704.0,
+      "cached_on": "2026-09-07T23:40:31.167447+00:00"
     }
   },
   "equity_history": [
@@ -117,6 +125,11 @@
     },
     {
       "date": "2026-09-06",
+      "equity": 99992.81106038971,
+      "spy_benchmark": 100409.36
+    },
+    {
+      "date": "2026-09-07",
       "equity": 99992.81106038971,
       "spy_benchmark": 100409.36
     }
