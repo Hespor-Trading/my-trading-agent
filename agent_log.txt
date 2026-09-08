@@ -133,3 +133,16 @@
 [2026-09-07 23:40:33 UTC] SKIP LLY: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
 [2026-09-07 23:40:33 UTC] RUN COMPLETE. Equity $99,992.81 (-0.01% since inception)
 [2026-09-07 23:40:33 UTC] =======================================================
+[2026-09-08 23:33:36 UTC] =======================================================
+[2026-09-08 23:33:36 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-08 23:33:39 UTC] Screening 6 candidates (rotating through 38-stock watchlist): XOM, CVX, PG, NOW, PANW, SNOW
+[2026-09-08 23:34:22 UTC] SKIP PG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-08 23:34:22 UTC] SKIP NOW: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-08 23:34:22 UTC] SKIP PANW: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-08 23:34:23 UTC] Sizing XOM at 63.0% of normal (volatility 26%)
+[2026-09-08 23:34:23 UTC] BUY  XOM [core] 19.58 sh @ $160.74 = $3,146.61, stop $151.10
+[2026-09-08 23:34:23 UTC] SKIP CVX: highly correlated with already-held XOM (corr=0.84)
+[2026-09-08 23:34:23 UTC] Sizing SNOW at 78.0% of normal (volatility 53%)
+[2026-09-08 23:34:23 UTC] BUY  SNOW [aggressive] 2.32 sh @ $336.51 = $779.67, stop $296.13
+[2026-09-08 23:34:24 UTC] RUN COMPLETE. Equity $99,894.53 (-0.11% since inception)
+[2026-09-08 23:34:24 UTC] =======================================================

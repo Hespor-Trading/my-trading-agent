@@ -1,8 +1,8 @@
 {
   "cash_by_tier": {
-    "core": 44775.584394961996,
+    "core": 41627.971746567266,
     "growth": 28418.384204041726,
-    "aggressive": 20000.0
+    "aggressive": 19219.327887003852
   },
   "positions": [
     {
@@ -34,13 +34,33 @@
       "stop_price": 212.14313176208495,
       "commission_paid": 1.0,
       "high_water_mark": 230.59036061096188
+    },
+    {
+      "ticker": "XOM",
+      "tier": "core",
+      "entry_price": 160.74033366394042,
+      "entry_date": "2026-09-08",
+      "shares": 19.575750383680003,
+      "stop_price": 151.09591364410397,
+      "commission_paid": 1.0,
+      "high_water_mark": 160.74033366394042
+    },
+    {
+      "ticker": "SNOW",
+      "tier": "aggressive",
+      "entry_price": 336.50649999999996,
+      "entry_date": "2026-09-08",
+      "shares": 2.31696003790758,
+      "stop_price": 296.12571999999994,
+      "commission_paid": 1.0,
+      "high_water_mark": 336.50649999999996
     }
   ],
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-07 23:40:33 UTC",
-  "rotation_index": 14,
+  "last_run": "2026-09-08 23:34:23 UTC",
+  "rotation_index": 20,
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -65,6 +85,18 @@
     "MA": {
       "market_cap": 507393736704.0,
       "cached_on": "2026-09-07T23:40:31.167447+00:00"
+    },
+    "XOM": {
+      "market_cap": 660619788288.0,
+      "cached_on": "2026-09-08T23:33:53.482784+00:00"
+    },
+    "CVX": {
+      "market_cap": 411544387584.0,
+      "cached_on": "2026-09-08T23:34:07.491812+00:00"
+    },
+    "SNOW": {
+      "market_cap": 118364397568.0,
+      "cached_on": "2026-09-08T23:34:22.543141+00:00"
     }
   },
   "equity_history": [
@@ -132,6 +164,11 @@
       "date": "2026-09-07",
       "equity": 99992.81106038971,
       "spy_benchmark": 100409.36
+    },
+    {
+      "date": "2026-09-08",
+      "equity": 99894.52620337709,
+      "spy_benchmark": 99857.9
     }
   ]
 }
