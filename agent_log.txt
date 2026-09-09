@@ -174,3 +174,21 @@
 [2026-09-09 04:01:50 UTC] SKIP TRI.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
 [2026-09-09 04:01:50 UTC] RUN COMPLETE. Equity $99,892.28 (-0.11% since inception)
 [2026-09-09 04:01:50 UTC] =======================================================
+[2026-09-09 04:22:34 UTC] =======================================================
+[2026-09-09 04:22:34 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-09 04:22:39 UTC] Screening 12 candidates (rotating through 64-stock watchlist): OKLO, LEU, SMR, NNE, ASPI, CRDO, ALAB, MOD, VRT, RKLB, ASTS, LUNR
+[2026-09-09 04:22:55 UTC] SKIP OKLO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP LEU: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP SMR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP NNE: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP ASPI: LIQUIDITY: price $4.22 below $5.0 floor
+[2026-09-09 04:22:55 UTC] SKIP CRDO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP ALAB: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP MOD: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP RKLB: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP ASTS: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] SKIP LUNR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 04:22:55 UTC] Sizing VRT at 68.9% of normal (volatility 75%)
+[2026-09-09 04:22:55 UTC] BUY  VRT [aggressive] 1.77 sh @ $291.70 = $516.29, stop $256.70
+[2026-09-09 04:22:56 UTC] RUN COMPLETE. Equity $99,889.73 (-0.11% since inception)
+[2026-09-09 04:22:56 UTC] =======================================================

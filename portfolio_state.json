@@ -2,7 +2,7 @@
   "cash_by_tier": {
     "core": 34151.96173166024,
     "growth": 23425.76992606459,
-    "aggressive": 14206.501685710926,
+    "aggressive": 13689.215963590825,
     "speculative": 14983.84177842892
   },
   "positions": [
@@ -65,13 +65,23 @@
       "stop_price": 164.1496274858093,
       "commission_paid": 1.0,
       "high_water_mark": 174.62726328277586
+    },
+    {
+      "ticker": "VRT",
+      "tier": "aggressive",
+      "entry_price": 291.70247653198237,
+      "entry_date": "2026-09-09",
+      "shares": 1.7699051727574033,
+      "stop_price": 256.6981793481445,
+      "commission_paid": 1.0,
+      "high_water_mark": 291.70247653198237
     }
   ],
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-09 04:01:50 UTC",
-  "rotation_index": 32,
+  "last_run": "2026-09-09 04:22:55 UTC",
+  "rotation_index": 44,
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -116,6 +126,10 @@
     "BNS.TO": {
       "market_cap": 155751235584.0,
       "cached_on": "2026-09-09T04:01:35.202279+00:00"
+    },
+    "VRT": {
+      "market_cap": 111966101504.0,
+      "cached_on": "2026-09-09T04:22:54.775297+00:00"
     }
   },
   "equity_history": [
@@ -197,6 +211,11 @@
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
+      "spy_benchmark": 99857.9
+    },
+    {
+      "date": "2026-09-09",
+      "equity": 99889.73429836657,
       "spy_benchmark": 99857.9
     }
   ]
