@@ -140,10 +140,12 @@ SECTOR = {
 MAX_SECTOR_PCT_OF_TIER = 0.40
 CORRELATION_THRESHOLD = 0.75
 
-# 64-name watchlist / 12 per run -> full rotation in 6 weekday runs (was 6/run,
-# 11+ runs). 5 of the requested 17 additions (GOOGL, AMZN, META, AMD, AVGO)
-# were already on the list and are not duplicated.
-ROTATION_BATCH_SIZE = 12
+# No rotation: the full watchlist is screened every run. Removed once
+# yfinance (no daily-request cap, confirmed ~90s for all 64 tickers) took
+# over as the primary source for prices, market cap, fundamentals, AND
+# earnings -- the old per-run cap existed only to stay under Alpha
+# Vantage's 25-requests/day earnings limit, which is no longer in the hot
+# path (see build_provider()).
 
 
 # ---------------------------------------------------------------------------
@@ -199,7 +201,6 @@ class PortfolioState:
     peak_equity: float = STARTING_CAPITAL
     started_on: str = ""
     last_run: str = ""
-    rotation_index: int = 0
     fundamentals_cache: dict = field(default_factory=dict)
     equity_history: list = field(default_factory=list)
 
@@ -212,7 +213,6 @@ class PortfolioState:
             peak_equity=STARTING_CAPITAL,
             started_on=_now(),
             last_run="",
-            rotation_index=0,
             fundamentals_cache={},
             equity_history=[],
         )
@@ -245,7 +245,9 @@ def load_state() -> PortfolioState:
         peak_equity=raw.get("peak_equity", STARTING_CAPITAL),
         started_on=raw.get("started_on", ""),
         last_run=raw.get("last_run", ""),
-        rotation_index=raw.get("rotation_index", 0),
+        # rotation_index may still be present in state files written before
+        # the full-watchlist-scan change -- ignored, not migrated; nothing
+        # reads it anymore.
         fundamentals_cache=raw.get("fundamentals_cache", {}),
         equity_history=raw.get("equity_history", []),
     )
@@ -259,7 +261,6 @@ def save_state(state: PortfolioState):
         "peak_equity": state.peak_equity,
         "started_on": state.started_on,
         "last_run": state.last_run,
-        "rotation_index": state.rotation_index,
         "fundamentals_cache": state.fundamentals_cache,
         "equity_history": state.equity_history,
     }
@@ -404,20 +405,9 @@ class PaperAgent:
         log(f"SELL {pos.ticker} [{pos.tier}] @ ${fill:.2f} ({reason}) "
             f"net P/L ${trade.net_pnl:,.2f} ({trade.return_pct:+.1%})")
 
-    def next_rotation_batch(self) -> list[str]:
+    def screenable_tickers(self) -> list[str]:
         held = {p.ticker for p in self.state.positions}
-        available = [t for t in WATCHLIST if t not in held]
-        if not available:
-            return []
-
-        n = len(available)
-        start = self.state.rotation_index % n
-        batch = []
-        for i in range(min(ROTATION_BATCH_SIZE, n)):
-            batch.append(available[(start + i) % n])
-
-        self.state.rotation_index = (start + ROTATION_BATCH_SIZE) % n
-        return batch
+        return [t for t in WATCHLIST if t not in held]
 
     def check_entries(self, prices: dict[str, float], candidates: list[str]):
         equity = self.total_equity(prices)
@@ -432,10 +422,10 @@ class PaperAgent:
         held = {p.ticker for p in self.state.positions}
         candidates = [t for t in candidates if t not in held]
         if not candidates:
-            log("No new candidates this run (already holding everything in today's batch).")
+            log("No new candidates this run (already holding the entire watchlist).")
             return
 
-        log(f"Screening {len(candidates)} candidates (rotating through {len(WATCHLIST)}-stock watchlist): "
+        log(f"Screening {len(candidates)} candidates (full {len(WATCHLIST)}-stock watchlist): "
             f"{', '.join(candidates)}")
         results = screen_universe(candidates, self.provider, self.cached_fundamentals_lookup)
 
@@ -643,7 +633,7 @@ class PaperAgent:
         log("PAPER TRADING RUN START (no real money)")
 
         held_tickers = {p.ticker for p in self.state.positions}
-        todays_batch = self.next_rotation_batch()
+        todays_batch = self.screenable_tickers()  # full watchlist, no rotation
         tickers = sorted(held_tickers | set(todays_batch))
 
         prices = self.current_prices(tickers)
@@ -752,18 +742,25 @@ def build_provider():
         raise SystemExit(
             "Set ALPHA_VANTAGE_API_KEY in backtest.py first.\n"
             "Free key: https://www.alphavantage.co/support/#api-key\n\n"
-            "NOTE: still needed for earnings/market cap lookups, even though\n"
-            "historical daily bars now come from yfinance."
+            "NOTE: still needed as the earnings fallback (see below), even\n"
+            "though yfinance is now the primary source for prices, market\n"
+            "cap, fundamentals, AND earnings."
         )
     alpha_vantage = AlphaVantageProvider(ALPHA_VANTAGE_API_KEY)
 
     if not FINNHUB_API_KEY or FINNHUB_API_KEY == "YOUR_FREE_KEY_HERE":
         log("WARN FINNHUB_API_KEY not set -- no fallback if Alpha Vantage rate-limits today")
-        earnings = alpha_vantage
+        av_chain = alpha_vantage
     else:
-        earnings = FallbackProvider(alpha_vantage, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
+        av_chain = FallbackProvider(alpha_vantage, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
 
     yfinance_provider = YFinanceProvider()
+    # yfinance primary for earnings too now (confirmed reliable across the
+    # watchlist, no daily-request cap) -- Alpha Vantage/Finnhub only get hit
+    # for the rare ticker yfinance has no earnings calendar for, which is
+    # what makes screening the full watchlist every run (no more rotation)
+    # safe: Alpha Vantage's 25/day cap is no longer in the hot path.
+    earnings = FallbackProvider(yfinance_provider, av_chain, log_fn=log)
     return SplitProvider(prices=yfinance_provider, earnings=earnings, market_cap=yfinance_provider,
                           fundamentals=yfinance_provider)
 

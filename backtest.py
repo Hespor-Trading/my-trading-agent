@@ -269,24 +269,39 @@ class FinnhubProvider(DataProvider):
 class FallbackProvider(DataProvider):
     """Tries the primary provider first; falls back to the secondary one
     only when the primary raises (a network error, an invalid-symbol
-    response, or Alpha Vantage's free-tier rate limit, which surfaces as a
-    normal-looking response with no price data rather than an HTTP error).
+    response, or Alpha Vantage's free-tier rate limit, which surfaces on
+    ITS OWN get_daily_prices as a normal-looking response with no price
+    data rather than an HTTP error -- note this is NOT true of Alpha
+    Vantage's get_earnings, which returns an empty list rather than
+    raising when rate-limited, so chaining a fallback behind Alpha
+    Vantage's earnings specifically won't reliably engage on that failure
+    mode; the full-watchlist-scan change works around this by making
+    Alpha Vantage a rarely-hit fallback behind yfinance's earnings instead
+    of the primary).
 
-    Used by paper_agent.py as AlphaVantageProvider-then-FinnhubProvider.
-    Finnhub can't cover Canadian (.TO) tickers on its free tier, so for
-    those a primary failure is still a failure -- this only rescues the
-    US-listed names in WATCHLIST."""
+    Used by paper_agent.py two ways: yfinance-then-(AlphaVantage-then-
+    Finnhub) for earnings, and AlphaVantage-then-Finnhub on its own for
+    the inner chain. Finnhub can't cover Canadian (.TO) or ASX (.AX)
+    tickers on its free tier, so for those a primary failure is still a
+    failure -- it only rescues the US-listed names in WATCHLIST."""
 
     def __init__(self, primary: DataProvider, fallback: DataProvider, log_fn=print):
         self.primary = primary
         self.fallback = fallback
         self._log = log_fn
+        # Only used for the WARN message below -- purely cosmetic, so a
+        # provider without this attribute (a plain DataProvider subclass,
+        # or a test double) just logs as "primary"/"fallback" instead of
+        # crashing.
+        self._primary_name = type(primary).__name__.replace("Provider", "")
+        self._fallback_name = type(fallback).__name__.replace("Provider", "")
 
     def _try(self, what: str, ticker: str, primary_call, fallback_call):
         try:
             return primary_call()
         except Exception as e:
-            self._log(f"WARN Alpha Vantage {what} failed for {ticker} ({e}); trying Finnhub fallback")
+            self._log(f"WARN {self._primary_name} {what} failed for {ticker} ({e}); "
+                      f"trying {self._fallback_name} fallback")
             return fallback_call()
 
     def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
@@ -318,8 +333,12 @@ class YFinanceProvider(DataProvider):
     returns no MarketCapitalization at all for several TSX tickers
     (SHOP.TO, CNQ.TO, BNS.TO confirmed), which isn't an error so the
     Alpha Vantage/Finnhub fallback never kicks in for it; yfinance has the
-    data for all of them. Earnings still come from Alpha Vantage/Finnhub.
-    See SplitProvider."""
+    data for all of them. And get_earnings() -- confirmed (see commit
+    history) to reliably cover 63/64 of the live watchlist with 8-24
+    quarters each, no daily-request cap the way Alpha Vantage's free tier
+    has (25/day); Alpha Vantage/Finnhub still sit behind it as a fallback
+    chain via SplitProvider for the rare ticker yfinance has no earnings
+    calendar for (confirmed: DRO.AX, an ASX small-cap)."""
 
     def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
         import yfinance as yf
@@ -338,6 +357,19 @@ class YFinanceProvider(DataProvider):
                 "volume": int(row["Volume"]),
             })
         return rows
+
+    def get_earnings(self, ticker: str) -> list[dict]:
+        import yfinance as yf
+
+        df = yf.Ticker(ticker).earnings_dates
+        if df is None or df.empty:
+            raise RuntimeError(f"No earnings calendar for {ticker} from yfinance")
+        rows = [{
+            "date": date.strftime("%Y-%m-%d"),
+            "reported_eps": _safe_float(row.get("Reported EPS")),
+            "estimated_eps": _safe_float(row.get("EPS Estimate")),
+        } for date, row in df.iterrows()]
+        return sorted(rows, key=lambda r: r["date"])
 
     def get_market_cap(self, ticker: str) -> Optional[float]:
         import yfinance as yf
@@ -369,8 +401,9 @@ class SplitProvider(DataProvider):
     """Routes each kind of data to whichever provider actually supplies it
     well, so the price, earnings, market-cap, and fundamentals sources can
     each be swapped independently. Used by paper_agent.py as: yfinance for
-    prices, market cap, and fundamentals; Alpha Vantage (Finnhub fallback)
-    for earnings."""
+    prices, market cap, fundamentals, AND (as of the full-watchlist-scan
+    change) earnings too, with the Alpha Vantage/Finnhub chain kept as a
+    fallback for the rare ticker yfinance has no earnings calendar for."""
 
     def __init__(self, prices: DataProvider, earnings: DataProvider, market_cap: DataProvider,
                  fundamentals: DataProvider = None):
@@ -394,9 +427,10 @@ class SplitProvider(DataProvider):
 
 def _safe_float(x) -> Optional[float]:
     try:
-        return float(x)
+        x = float(x)
     except (TypeError, ValueError):
         return None
+    return None if x != x else x  # x != x is True only for NaN (e.g. an unreported future earnings date)
 
 
 # ---------------------------------------------------------------------------
