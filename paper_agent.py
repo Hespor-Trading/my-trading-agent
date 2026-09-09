@@ -100,8 +100,19 @@ WATCHLIST = [
     # Speculative tier: high-growth, early-stage names -- nuclear/SMR, space,
     # advanced semis, energy storage, drones. Deliberately smaller and wilder
     # than anything else on the watchlist; see RISK_TIERS["speculative"].
+    # "DRO" (plain, no exchange suffix) resolves to a dead/unrelated Yahoo
+    # symbol with no price data -- DroneShield trades on the ASX, so it
+    # needs the ".AX" suffix the same way the TSX names above need ".TO".
+    # Found while auditing yfinance fundamentals coverage across the list.
     "OKLO", "LEU", "SMR", "NNE", "ASPI", "CRDO", "ALAB", "MOD",
-    "VRT", "RKLB", "ASTS", "LUNR", "FLNC", "EOSE", "DRO", "ONDS",
+    "VRT", "RKLB", "ASTS", "LUNR", "FLNC", "EOSE", "DRO.AX", "ONDS",
+    # Mega-cap/mid-cap additions -- GOOGL, AMZN, META, AMD, AVGO were already
+    # on the list above and are deliberately not repeated here. Tier
+    # placement is decided live by assign_tier() on market cap/volatility/
+    # earnings, not hardcoded -- these are expected to land in core (TSM) or
+    # growth (semis/data-center names) or aggressive (VST/CEG/BE) based on
+    # their actual numbers, not this grouping.
+    "MRVL", "ARM", "TSM", "PLTR", "ANET", "DLR", "EQIX", "VST", "CEG", "BE",
 ]
 
 # Simple sector classification for concentration-cap checks. Not GICS-precise,
@@ -119,14 +130,20 @@ SECTOR = {
     "UNH": "healthcare", "LLY": "healthcare",
     "UBER": "industrial", "CP.TO": "industrial", "TRI.TO": "industrial",
     "MOD": "industrial", "VRT": "industrial", "RKLB": "industrial", "ASTS": "industrial",
-    "LUNR": "industrial", "DRO": "industrial", "ONDS": "industrial",
+    "LUNR": "industrial", "DRO.AX": "industrial", "ONDS": "industrial",
     "AMZN": "consumer", "COST": "consumer", "HD": "consumer", "PG": "consumer", "ABNB": "consumer",
+    "MRVL": "tech", "ARM": "tech", "TSM": "tech", "PLTR": "tech", "ANET": "tech",
+    "DLR": "tech", "EQIX": "tech",  # data-center REITs -- grouped with tech's AI/data-infra names, no dedicated real-estate bucket
+    "VST": "energy", "CEG": "energy", "BE": "energy",
 }
 
 MAX_SECTOR_PCT_OF_TIER = 0.40
 CORRELATION_THRESHOLD = 0.75
 
-ROTATION_BATCH_SIZE = 6
+# 64-name watchlist / 12 per run -> full rotation in 6 weekday runs (was 6/run,
+# 11+ runs). 5 of the requested 17 additions (GOOGL, AMZN, META, AMD, AVGO)
+# were already on the list and are not duplicated.
+ROTATION_BATCH_SIZE = 12
 
 
 # ---------------------------------------------------------------------------
@@ -442,9 +459,10 @@ class PaperAgent:
                     continue
 
                 if ANTHROPIC_API_KEY:
-                    news = check_news_sentiment(ticker, ANTHROPIC_API_KEY)
+                    fundamentals = self._valuation_snapshot(ticker)
+                    news = check_news_sentiment(ticker, ANTHROPIC_API_KEY, fundamentals)
                     if news["verdict"] == "negative":
-                        log(f"SKIP {ticker}: negative news flag -- {news['summary']}")
+                        log(f"SKIP {ticker}: negative news/valuation flag -- {news['summary']}")
                         continue
 
                 if self._open(ticker, tier, price, prices, entry.get("prices", [])):
@@ -468,6 +486,19 @@ class PaperAgent:
             "cached_on": _now_iso(),
         }
         return result
+
+    def _valuation_snapshot(self, ticker: str) -> Optional[dict]:
+        """P/E, forward P/E, revenue growth, profit margin for the news/
+        valuation check right before a buy. Deliberately NOT cached like
+        cached_fundamentals_lookup's market cap -- this feeds a same-day
+        buy decision, so it needs today's number, not a 30-day-old one.
+        Cost is bounded the same way news_check already is: only called
+        for the handful of candidates that clear every earlier filter."""
+        try:
+            return self.provider.get_fundamentals(ticker)
+        except Exception as e:
+            log(f"WARN valuation lookup failed for {ticker}: {e}")
+            return None
 
     def _position_size_pct(self, ticker: str, tier: str) -> float:
         """Scale the tier's normal position size down for a volatile stock --
@@ -733,7 +764,8 @@ def build_provider():
         earnings = FallbackProvider(alpha_vantage, FinnhubProvider(FINNHUB_API_KEY), log_fn=log)
 
     yfinance_provider = YFinanceProvider()
-    return SplitProvider(prices=yfinance_provider, earnings=earnings, market_cap=yfinance_provider)
+    return SplitProvider(prices=yfinance_provider, earnings=earnings, market_cap=yfinance_provider,
+                          fundamentals=yfinance_provider)
 
 
 def build_fundamentals_lookup(provider):

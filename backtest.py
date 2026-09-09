@@ -345,17 +345,39 @@ class YFinanceProvider(DataProvider):
         mc = yf.Ticker(ticker).info.get("marketCap")
         return float(mc) if mc is not None else None
 
+    def get_fundamentals(self, ticker: str) -> dict:
+        """Valuation snapshot for the pre-buy sentiment/decision check --
+        NOT cached (see paper_agent.py's use of this), since a P/E/margin
+        check right before a buy should reflect today's price, not a
+        30-day-old number the way the tier-assignment market cap is
+        allowed to. A field yfinance doesn't have for this ticker (e.g.
+        trailing P/E for a company with no/negative earnings -- genuinely
+        undefined, not a data gap) comes back as None; callers must treat
+        that as "unknown," not "zero.\""""
+        import yfinance as yf
+
+        info = yf.Ticker(ticker).info
+        return {
+            "pe_ratio": _safe_float(info.get("trailingPE")),
+            "forward_pe": _safe_float(info.get("forwardPE")),
+            "revenue_growth": _safe_float(info.get("revenueGrowth")),
+            "profit_margin": _safe_float(info.get("profitMargins")),
+        }
+
 
 class SplitProvider(DataProvider):
     """Routes each kind of data to whichever provider actually supplies it
-    well, so the price, earnings, and market-cap sources can each be
-    swapped independently. Used by paper_agent.py as: yfinance for prices
-    and market cap, Alpha Vantage (Finnhub fallback) for earnings."""
+    well, so the price, earnings, market-cap, and fundamentals sources can
+    each be swapped independently. Used by paper_agent.py as: yfinance for
+    prices, market cap, and fundamentals; Alpha Vantage (Finnhub fallback)
+    for earnings."""
 
-    def __init__(self, prices: DataProvider, earnings: DataProvider, market_cap: DataProvider):
+    def __init__(self, prices: DataProvider, earnings: DataProvider, market_cap: DataProvider,
+                 fundamentals: DataProvider = None):
         self.prices = prices
         self.earnings_source = earnings
         self.market_cap_source = market_cap
+        self.fundamentals_source = fundamentals or market_cap
 
     def get_daily_prices(self, ticker: str, start: str) -> list[dict]:
         return self.prices.get_daily_prices(ticker, start)
@@ -365,6 +387,9 @@ class SplitProvider(DataProvider):
 
     def get_market_cap(self, ticker: str) -> Optional[float]:
         return self.market_cap_source.get_market_cap(ticker)
+
+    def get_fundamentals(self, ticker: str) -> dict:
+        return self.fundamentals_source.get_fundamentals(ticker)
 
 
 def _safe_float(x) -> Optional[float]:
