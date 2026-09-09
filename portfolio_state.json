@@ -1,8 +1,8 @@
 {
   "cash_by_tier": {
-    "core": 34151.96173166024,
-    "growth": 23425.76992606459,
-    "aggressive": 13689.215963590825,
+    "core": 23049.175550827185,
+    "growth": 21141.40378421563,
+    "aggressive": 12203.991813987674,
     "speculative": 14983.84177842892
   },
   "positions": [
@@ -75,13 +75,102 @@
       "stop_price": 256.6981793481445,
       "commission_paid": 1.0,
       "high_water_mark": 291.70247653198237
+    },
+    {
+      "ticker": "AMZN",
+      "tier": "core",
+      "entry_price": 257.09848622131346,
+      "entry_date": "2026-09-09",
+      "shares": 8.74208284847542,
+      "stop_price": 241.67257704803464,
+      "commission_paid": 1.0,
+      "high_water_mark": 257.09848622131346
+    },
+    {
+      "ticker": "JPM",
+      "tier": "core",
+      "entry_price": 353.6867647705078,
+      "entry_date": "2026-09-09",
+      "shares": 9.063840365189147,
+      "stop_price": 332.4655588842773,
+      "commission_paid": 1.0,
+      "high_water_mark": 353.6867647705078
+    },
+    {
+      "ticker": "V",
+      "tier": "core",
+      "entry_price": 368.8243346557617,
+      "entry_date": "2026-09-09",
+      "shares": 8.544164895096136,
+      "stop_price": 346.69487457641594,
+      "commission_paid": 1.0,
+      "high_water_mark": 368.8243346557617
+    },
+    {
+      "ticker": "CNQ.TO",
+      "tier": "core",
+      "entry_price": 70.20508316802979,
+      "entry_date": "2026-09-09",
+      "shares": 35.526681170879606,
+      "stop_price": 65.992778177948,
+      "commission_paid": 1.0,
+      "high_water_mark": 70.20508316802979
+    },
+    {
+      "ticker": "TSM",
+      "tier": "growth",
+      "entry_price": 439.43899999999996,
+      "entry_date": "2026-09-09",
+      "shares": 2.810126776475479,
+      "stop_price": 404.28388,
+      "commission_paid": 1.0,
+      "high_water_mark": 439.43899999999996
+    },
+    {
+      "ticker": "ANET",
+      "tier": "growth",
+      "entry_price": 195.15496672058103,
+      "entry_date": "2026-09-09",
+      "shares": 5.367461863377123,
+      "stop_price": 179.54256938293454,
+      "commission_paid": 1.0,
+      "high_water_mark": 195.15496672058103
+    },
+    {
+      "ticker": "AMD",
+      "tier": "aggressive",
+      "entry_price": 507.2572102050781,
+      "entry_date": "2026-09-09",
+      "shares": 1.034906536130221,
+      "stop_price": 446.3863449804687,
+      "commission_paid": 1.0,
+      "high_water_mark": 507.2572102050781
+    },
+    {
+      "ticker": "NET",
+      "tier": "aggressive",
+      "entry_price": 285.15288775634764,
+      "entry_date": "2026-09-09",
+      "shares": 2.0440289113907486,
+      "stop_price": 250.93454122558592,
+      "commission_paid": 1.0,
+      "high_water_mark": 285.15288775634764
+    },
+    {
+      "ticker": "BE",
+      "tier": "aggressive",
+      "entry_price": 278.0516612243652,
+      "entry_date": "2026-09-09",
+      "shares": 1.3465109284856538,
+      "stop_price": 244.68546187744138,
+      "commission_paid": 1.0,
+      "high_water_mark": 278.0516612243652
     }
   ],
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-09 04:22:55 UTC",
-  "rotation_index": 44,
+  "last_run": "2026-09-09 06:38:57 UTC",
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -130,6 +219,46 @@
     "VRT": {
       "market_cap": 111966101504.0,
       "cached_on": "2026-09-09T04:22:54.775297+00:00"
+    },
+    "AMZN": {
+      "market_cap": 2771758874624.0,
+      "cached_on": "2026-09-09T06:38:14.073352+00:00"
+    },
+    "AMD": {
+      "market_cap": 825607913472.0,
+      "cached_on": "2026-09-09T06:38:15.753437+00:00"
+    },
+    "JPM": {
+      "market_cap": 939695472640.0,
+      "cached_on": "2026-09-09T06:38:18.854877+00:00"
+    },
+    "NET": {
+      "market_cap": 101233459200.0,
+      "cached_on": "2026-09-09T06:38:27.622705+00:00"
+    },
+    "CNQ.TO": {
+      "market_cap": 144655450112.0,
+      "cached_on": "2026-09-09T06:38:31.571189+00:00"
+    },
+    "MRVL": {
+      "market_cap": 202577018880.0,
+      "cached_on": "2026-09-09T06:38:42.576417+00:00"
+    },
+    "TSM": {
+      "market_cap": 2276862197760.0,
+      "cached_on": "2026-09-09T06:38:44.303116+00:00"
+    },
+    "ANET": {
+      "market_cap": 245888368640.0,
+      "cached_on": "2026-09-09T06:38:45.768788+00:00"
+    },
+    "DLR": {
+      "market_cap": 71567269888.0,
+      "cached_on": "2026-09-09T06:38:47.156393+00:00"
+    },
+    "BE": {
+      "market_cap": 81648877568.0,
+      "cached_on": "2026-09-09T06:38:49.744362+00:00"
     }
   },
   "equity_history": [
@@ -216,6 +345,11 @@
     {
       "date": "2026-09-09",
       "equity": 99889.73429836657,
+      "spy_benchmark": 99857.9
+    },
+    {
+      "date": "2026-09-09",
+      "equity": 99868.47422019845,
       "spy_benchmark": 99857.9
     }
   ]

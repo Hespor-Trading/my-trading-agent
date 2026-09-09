@@ -192,3 +192,71 @@
 [2026-09-09 04:22:55 UTC] BUY  VRT [aggressive] 1.77 sh @ $291.70 = $516.29, stop $256.70
 [2026-09-09 04:22:56 UTC] RUN COMPLETE. Equity $99,889.73 (-0.11% since inception)
 [2026-09-09 04:22:56 UTC] =======================================================
+[2026-09-09 06:37:50 UTC] =======================================================
+[2026-09-09 06:37:50 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-09 06:38:12 UTC] Screening 57 candidates (full 64-stock watchlist): GOOGL, AMZN, META, AMD, AVGO, ORCL, CRM, JPM, V, MA, COST, HD, UNH, LLY, CVX, PG, NOW, PANW, NET, DDOG, UBER, SHOP, SHOP.TO, RY.TO, TD.TO, CNQ.TO, ENB.TO, BNS.TO, BMO.TO, CP.TO, SU.TO, TRI.TO, OKLO, LEU, SMR, NNE, ASPI, CRDO, ALAB, MOD, RKLB, ASTS, LUNR, FLNC, EOSE, DRO.AX, ONDS, MRVL, ARM, TSM, PLTR, ANET, DLR, EQIX, VST, CEG, BE
+[2026-09-09 06:38:49 UTC] SKIP GOOGL: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP META: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP AVGO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP ORCL: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP CRM: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP COST: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP HD: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP UNH: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP LLY: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP PG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP NOW: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP PANW: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP DDOG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP UBER: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP SHOP: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP SHOP.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP RY.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP TD.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP ENB.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP BMO.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP CP.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP TRI.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP OKLO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP LEU: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP SMR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP NNE: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP ASPI: LIQUIDITY: price $4.22 below $5.0 floor
+[2026-09-09 06:38:49 UTC] SKIP CRDO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP ALAB: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP MOD: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP RKLB: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP ASTS: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP LUNR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP FLNC: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP EOSE: LIQUIDITY: price $4.30 below $5.0 floor
+[2026-09-09 06:38:49 UTC] SKIP DRO.AX: LIQUIDITY: price $1.73 below $5.0 floor
+[2026-09-09 06:38:49 UTC] SKIP ONDS: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP ARM: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP PLTR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP EQIX: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP VST: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:49 UTC] SKIP CEG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 06:38:50 UTC] Sizing AMZN at 50.0% of normal (volatility 45%)
+[2026-09-09 06:38:50 UTC] BUY  AMZN [core] 8.74 sh @ $257.10 = $2,247.58, stop $241.67
+[2026-09-09 06:38:51 UTC] Sizing JPM at 71.3% of normal (volatility 20%)
+[2026-09-09 06:38:51 UTC] BUY  JPM [core] 9.06 sh @ $353.69 = $3,205.76, stop $332.47
+[2026-09-09 06:38:52 UTC] Sizing V at 70.1% of normal (volatility 21%)
+[2026-09-09 06:38:52 UTC] BUY  V [core] 8.54 sh @ $368.82 = $3,151.30, stop $346.69
+[2026-09-09 06:38:52 UTC] SKIP MA: highly correlated with already-held V (corr=0.89)
+[2026-09-09 06:38:52 UTC] SKIP CVX: highly correlated with already-held XOM (corr=0.84)
+[2026-09-09 06:38:53 UTC] Sizing CNQ.TO at 55.5% of normal (volatility 31%)
+[2026-09-09 06:38:53 UTC] BUY  CNQ.TO [core] 35.53 sh @ $70.21 = $2,494.15, stop $65.99
+[2026-09-09 06:38:54 UTC] Sizing TSM at 61.8% of normal (volatility 46%)
+[2026-09-09 06:38:54 UTC] BUY  TSM [growth] 2.81 sh @ $439.44 = $1,234.88, stop $404.28
+[2026-09-09 06:38:54 UTC] Sizing ANET at 52.4% of normal (volatility 57%)
+[2026-09-09 06:38:54 UTC] BUY  ANET [growth] 5.37 sh @ $195.15 = $1,047.49, stop $179.54
+[2026-09-09 06:38:55 UTC] Sizing AMD at 70.1% of normal (volatility 72%)
+[2026-09-09 06:38:55 UTC] BUY  AMD [aggressive] 1.03 sh @ $507.26 = $524.96, stop $446.39
+[2026-09-09 06:38:56 UTC] Sizing NET at 77.8% of normal (volatility 53%)
+[2026-09-09 06:38:56 UTC] BUY  NET [aggressive] 2.04 sh @ $285.15 = $582.86, stop $250.93
+[2026-09-09 06:38:56 UTC] SKIP MRVL: highly correlated with already-held AMD (corr=0.77)
+[2026-09-09 06:38:57 UTC] Sizing BE at 50.0% of normal (volatility 122%)
+[2026-09-09 06:38:57 UTC] BUY  BE [aggressive] 1.35 sh @ $278.05 = $374.40, stop $244.69
+[2026-09-09 06:38:58 UTC] RUN COMPLETE. Equity $99,868.47 (-0.13% since inception)
+[2026-09-09 06:38:58 UTC] =======================================================
