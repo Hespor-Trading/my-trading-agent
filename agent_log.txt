@@ -260,3 +260,53 @@
 [2026-09-09 06:38:57 UTC] BUY  BE [aggressive] 1.35 sh @ $278.05 = $374.40, stop $244.69
 [2026-09-09 06:38:58 UTC] RUN COMPLETE. Equity $99,868.47 (-0.13% since inception)
 [2026-09-09 06:38:58 UTC] =======================================================
+[2026-09-09 23:27:10 UTC] =======================================================
+[2026-09-09 23:27:10 UTC] PAPER TRADING RUN START (no real money)
+[2026-09-09 23:27:22 UTC] Screening 48 candidates (full 64-stock watchlist): GOOGL, META, AVGO, ORCL, CRM, MA, COST, HD, UNH, LLY, CVX, PG, NOW, PANW, DDOG, UBER, SHOP, SHOP.TO, RY.TO, TD.TO, ENB.TO, BNS.TO, BMO.TO, CP.TO, SU.TO, TRI.TO, OKLO, LEU, SMR, NNE, ASPI, CRDO, ALAB, MOD, RKLB, ASTS, LUNR, FLNC, EOSE, DRO.AX, ONDS, MRVL, ARM, PLTR, DLR, EQIX, VST, CEG
+[2026-09-09 23:27:40 UTC] SKIP GOOGL: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP META: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP AVGO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP ORCL: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP CRM: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP COST: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP HD: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP UNH: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP LLY: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP PG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP PANW: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP DDOG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP UBER: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP SHOP: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP SHOP.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP RY.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP TD.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP ENB.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP BMO.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP CP.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP TRI.TO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP OKLO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP LEU: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP SMR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP NNE: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP ASPI: LIQUIDITY: price $3.82 below $5.0 floor
+[2026-09-09 23:27:40 UTC] SKIP CRDO: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP ALAB: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP MOD: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP RKLB: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP ASTS: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP LUNR: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP FLNC: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP EOSE: LIQUIDITY: price $4.15 below $5.0 floor
+[2026-09-09 23:27:40 UTC] SKIP DRO.AX: LIQUIDITY: price $1.73 below $5.0 floor
+[2026-09-09 23:27:40 UTC] SKIP ONDS: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP ARM: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP EQIX: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP VST: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:40 UTC] SKIP CEG: MOMENTUM: not in confirmed uptrend (need price > 50MA > 200MA)
+[2026-09-09 23:27:41 UTC] Sizing NOW at 50.0% of normal (volatility 63%)
+[2026-09-09 23:27:41 UTC] BUY  NOW [growth] 7.60 sh @ $131.24 = $997.34, stop $120.74
+[2026-09-09 23:27:41 UTC] SKIP MRVL: highly correlated with already-held AMD (corr=0.76)
+[2026-09-09 23:27:42 UTC] Sizing PLTR at 65.6% of normal (volatility 83%)
+[2026-09-09 23:27:42 UTC] BUY  PLTR [aggressive] 2.89 sh @ $170.04 = $491.42, stop $149.63
+[2026-09-09 23:27:43 UTC] RUN COMPLETE. Equity $99,803.51 (-0.20% since inception)
+[2026-09-09 23:27:43 UTC] =======================================================

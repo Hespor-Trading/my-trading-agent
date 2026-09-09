@@ -1,8 +1,8 @@
 {
   "cash_by_tier": {
     "core": 23049.175550827185,
-    "growth": 21141.40378421563,
-    "aggressive": 12203.991813987674,
+    "growth": 20143.06202179247,
+    "aggressive": 11711.576562547607,
     "speculative": 14983.84177842892
   },
   "positions": [
@@ -42,9 +42,9 @@
       "entry_price": 160.74033366394042,
       "entry_date": "2026-09-08",
       "shares": 19.575750383680003,
-      "stop_price": 151.09591364410397,
+      "stop_price": 154.3761959838867,
       "commission_paid": 1.0,
-      "high_water_mark": 160.74033366394042
+      "high_water_mark": 164.22999572753906
     },
     {
       "ticker": "SNOW",
@@ -92,9 +92,9 @@
       "entry_price": 353.6867647705078,
       "entry_date": "2026-09-09",
       "shares": 9.063840365189147,
-      "stop_price": 332.4655588842773,
+      "stop_price": 333.4273919677734,
       "commission_paid": 1.0,
-      "high_water_mark": 353.6867647705078
+      "high_water_mark": 354.7099914550781
     },
     {
       "ticker": "V",
@@ -112,9 +112,9 @@
       "entry_price": 70.20508316802979,
       "entry_date": "2026-09-09",
       "shares": 35.526681170879606,
-      "stop_price": 65.992778177948,
+      "stop_price": 66.6554034423828,
       "commission_paid": 1.0,
-      "high_water_mark": 70.20508316802979
+      "high_water_mark": 70.91000366210938
     },
     {
       "ticker": "TSM",
@@ -142,9 +142,9 @@
       "entry_price": 507.2572102050781,
       "entry_date": "2026-09-09",
       "shares": 1.034906536130221,
-      "stop_price": 446.3863449804687,
+      "stop_price": 458.56357421875,
       "commission_paid": 1.0,
-      "high_water_mark": 507.2572102050781
+      "high_water_mark": 521.094970703125
     },
     {
       "ticker": "NET",
@@ -152,9 +152,9 @@
       "entry_price": 285.15288775634764,
       "entry_date": "2026-09-09",
       "shares": 2.0440289113907486,
-      "stop_price": 250.93454122558592,
+      "stop_price": 276.4783935546875,
       "commission_paid": 1.0,
-      "high_water_mark": 285.15288775634764
+      "high_water_mark": 314.17999267578125
     },
     {
       "ticker": "BE",
@@ -165,12 +165,32 @@
       "stop_price": 244.68546187744138,
       "commission_paid": 1.0,
       "high_water_mark": 278.0516612243652
+    },
+    {
+      "ticker": "NOW",
+      "tier": "growth",
+      "entry_price": 131.2411106109619,
+      "entry_date": "2026-09-09",
+      "shares": 7.599309071526977,
+      "stop_price": 120.74182176208495,
+      "commission_paid": 1.0,
+      "high_water_mark": 131.2411106109619
+    },
+    {
+      "ticker": "PLTR",
+      "tier": "aggressive",
+      "entry_price": 170.03858877563474,
+      "entry_date": "2026-09-09",
+      "shares": 2.89002193548246,
+      "stop_price": 149.63395812255857,
+      "commission_paid": 1.0,
+      "high_water_mark": 170.03858877563474
     }
   ],
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-09 06:38:57 UTC",
+  "last_run": "2026-09-09 23:27:42 UTC",
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -259,6 +279,14 @@
     "BE": {
       "market_cap": 81648877568.0,
       "cached_on": "2026-09-09T06:38:49.744362+00:00"
+    },
+    "NOW": {
+      "market_cap": 135549648896.0,
+      "cached_on": "2026-09-09T23:27:29.030443+00:00"
+    },
+    "PLTR": {
+      "market_cap": 407390486528.0,
+      "cached_on": "2026-09-09T23:27:38.877466+00:00"
     }
   },
   "equity_history": [
@@ -335,22 +363,27 @@
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": 99857.9
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": 99857.9
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99889.73429836657,
-      "spy_benchmark": 99857.9
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99868.47422019845,
-      "spy_benchmark": 99857.9
+      "spy_benchmark": 99393.79
+    },
+    {
+      "date": "2026-09-09",
+      "equity": 99803.51090243427,
+      "spy_benchmark": 99393.79
     }
   ]
 }
