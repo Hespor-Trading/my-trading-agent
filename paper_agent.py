@@ -581,6 +581,32 @@ class PaperAgent:
         for h in self.state.equity_history:
             h["spy_benchmark"] = round(STARTING_CAPITAL * (close_on_or_before(h["date"]) / base), 2)
 
+    def _reconcile_tiers(self, prices: dict[str, float]):
+        """One-time migration for a change in RISK_TIERS' tier set or capital_pct
+        targets (e.g. adding the speculative tier and rebalancing the other
+        three). cash_by_tier persists across runs and is never otherwise
+        touched by a capital_pct edit, so a loaded state can be missing a
+        newly-added tier's cash entirely (a KeyError waiting to happen the
+        first time that tier tries to open a position) or still be sitting on
+        stale pre-rebalance cash splits. Runs only when the set of tiers on
+        disk doesn't match RISK_TIERS -- normal day-to-day P&L drift across
+        tiers is expected and must NOT keep getting corrected back."""
+        if set(self.state.cash_by_tier) == set(RISK_TIERS):
+            return
+
+        total = self.total_equity(prices)
+        position_value = {t: 0.0 for t in RISK_TIERS}
+        for p in self.state.positions:
+            position_value[p.tier] += p.market_value(prices.get(p.ticker, p.entry_price))
+
+        log("Tier set changed -- rebalancing cash_by_tier to current capital_pct targets:")
+        new_cash = {}
+        for t, cfg in RISK_TIERS.items():
+            target_equity = total * cfg["capital_pct"]
+            new_cash[t] = max(0.0, target_equity - position_value[t])
+            log(f"  {t}: ${self.state.cash_by_tier.get(t, 0.0):,.2f} -> ${new_cash[t]:,.2f}")
+        self.state.cash_by_tier = new_cash
+
     def run_once(self):
         log("=" * 55)
         log("PAPER TRADING RUN START (no real money)")
@@ -594,6 +620,7 @@ class PaperAgent:
             log("ERROR: no prices retrieved. Check API key / rate limits. Aborting run.")
             return
 
+        self._reconcile_tiers(prices)
         self.check_exits(prices)
         self.check_entries(prices, todays_batch)
 
