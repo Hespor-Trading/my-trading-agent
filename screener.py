@@ -14,6 +14,9 @@ TIER ASSIGNMENT LOGIC:
   core        - large cap, low volatility, established earnings history
   growth      - mid/large cap, strong momentum, some earnings history
   aggressive  - smaller cap OR high volatility, still liquid enough to exit
+  speculative - early-stage names too small/volatile even for aggressive,
+                still liquid enough to exit; sized and stopped very
+                differently at the portfolio level (see paper_agent.py)
 
 LIQUIDITY FLOOR (applies to ALL tiers, non-negotiable):
   Every candidate must clear a minimum dollar-volume bar. This is the single
@@ -58,6 +61,11 @@ TIER_RULES = {
         "min_market_cap": 500_000_000,      # $500M+ -- still a real company
         "max_annualized_volatility": 1.20,   # tolerant, but not unlimited
         "min_earnings_quarters": 2,          # must have SOME reporting history
+    },
+    "speculative": {
+        "min_market_cap": 100_000_000,      # $100M+ -- early-stage, still real
+        "max_annualized_volatility": 1.50,   # wilder than aggressive tolerates
+        "min_earnings_quarters": 1,          # reported at least once
     },
 }
 
@@ -194,7 +202,7 @@ def assign_tier(
     if market_cap is None:
         return None, "no market cap data"
 
-    for tier in ("core", "growth", "aggressive"):
+    for tier in ("core", "growth", "aggressive", "speculative"):
         rules = TIER_RULES[tier]
         if market_cap < rules["min_market_cap"]:
             continue
@@ -220,7 +228,7 @@ def screen_universe(
     provider: object with get_daily_prices(ticker, start) and get_earnings(ticker)
     fundamentals_lookup: callable(ticker) -> {"market_cap": float or None}
     """
-    results = {"core": [], "growth": [], "aggressive": [], "rejected": {}}
+    results = {"core": [], "growth": [], "aggressive": [], "speculative": [], "rejected": {}}
 
     for ticker in universe:
         try:
@@ -260,7 +268,7 @@ def print_screen_results(results: dict):
     print("\n" + "=" * 60)
     print("SCREEN RESULTS")
     print("=" * 60)
-    for tier in ("core", "growth", "aggressive"):
+    for tier in ("core", "growth", "aggressive", "speculative"):
         entries = results[tier]
         print(f"\n[{tier.upper()}] -- {len(entries)} qualified")
         for e in entries:

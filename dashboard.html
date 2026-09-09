@@ -18,6 +18,7 @@
     --core: #58a6ff;
     --growth: #3fb950;
     --aggressive: #f0883e;
+    --speculative: #db61a2;
     --shadow: 0 1px 2px 0 rgba(0,0,0,0.35), 0 1px 3px 1px rgba(0,0,0,0.25);
   }
   * { box-sizing: border-box; }
@@ -143,6 +144,7 @@
   .tier-dot.core { background: var(--core); }
   .tier-dot.growth { background: var(--growth); }
   .tier-dot.aggressive { background: var(--aggressive); }
+  .tier-dot.speculative { background: var(--speculative); }
   .tier-value {
     font-size: 13px;
     color: var(--muted);
@@ -283,9 +285,10 @@
 <script>
 const STARTING_CAPITAL = 100000.00;
 const RISK_TIERS = {
-  core: { label: "Core", pct: 0.50 },
-  growth: { label: "Growth", pct: 0.30 },
-  aggressive: { label: "Aggressive", pct: 0.20 },
+  core: { label: "Core", pct: 0.45 },
+  growth: { label: "Growth", pct: 0.25 },
+  aggressive: { label: "Aggressive", pct: 0.15 },
+  speculative: { label: "Speculative", pct: 0.15 },
 };
 
 function fmt(n, decimals = 2) {

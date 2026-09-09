@@ -63,14 +63,28 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 STARTING_CAPITAL = 100_000.00
 
 RISK_TIERS = {
-    "core":       {"capital_pct": 0.50, "position_size_pct": 0.10, "stop_loss_pct": 0.06, "max_positions": 8},
-    "growth":     {"capital_pct": 0.30, "position_size_pct": 0.08, "stop_loss_pct": 0.08, "max_positions": 8},
-    "aggressive": {"capital_pct": 0.20, "position_size_pct": 0.05, "stop_loss_pct": 0.12, "max_positions": 8},
+    "core":       {"capital_pct": 0.45, "position_size_pct": 0.10, "stop_loss_pct": 0.06, "max_positions": 8},
+    "growth":     {"capital_pct": 0.25, "position_size_pct": 0.08, "stop_loss_pct": 0.08, "max_positions": 8},
+    "aggressive": {"capital_pct": 0.15, "position_size_pct": 0.05, "stop_loss_pct": 0.12, "max_positions": 8},
+    # No "position_size_pct" -- sizing is a flat SPECULATIVE_MAX_POSITION_PCT_OF_TOTAL
+    # of the whole portfolio, not tier-relative like the other three (see _open()).
+    # stop_loss_pct here is a fixed floor from entry price, not a trailing stop
+    # (see check_exits()) -- deliberately not tied to high_water_mark so a name
+    # that runs hard doesn't get stopped out on a pullback that's still a big win.
+    "speculative": {"capital_pct": 0.15, "stop_loss_pct": 0.25, "max_positions": 8},
 }
+
+# Flat position size for the speculative tier, as a fraction of TOTAL portfolio
+# equity -- not tier-relative and not volatility-scaled like the other tiers.
+# These names are volatile enough that the risk control is "many small bets,"
+# not "fewer, cautiously-sized ones."
+SPECULATIVE_MAX_POSITION_PCT_OF_TOTAL = 0.02
 
 EXECUTION_ASSUMPTIONS = {
     "commission_per_trade": 1.00,
-    "slippage_pct": {"core": 0.0005, "growth": 0.0010, "aggressive": 0.0030},
+    # Speculative gets the widest slippage assumption -- smaller, more
+    # thinly-traded names than even the aggressive tier's spreads.
+    "slippage_pct": {"core": 0.0005, "growth": 0.0010, "aggressive": 0.0030, "speculative": 0.0050},
 }
 
 MAX_PORTFOLIO_DRAWDOWN = 0.20
@@ -83,6 +97,11 @@ WATCHLIST = [
     "NOW", "PANW", "SNOW", "NET", "DDOG", "UBER", "ABNB", "SHOP",
     "SHOP.TO", "RY.TO", "TD.TO", "CNQ.TO", "ENB.TO", "BNS.TO",
     "BMO.TO", "CP.TO", "SU.TO", "TRI.TO",
+    # Speculative tier: high-growth, early-stage names -- nuclear/SMR, space,
+    # advanced semis, energy storage, drones. Deliberately smaller and wilder
+    # than anything else on the watchlist; see RISK_TIERS["speculative"].
+    "OKLO", "LEU", "SMR", "NNE", "ASPI", "CRDO", "ALAB", "MOD",
+    "VRT", "RKLB", "ASTS", "LUNR", "FLNC", "EOSE", "DRO", "ONDS",
 ]
 
 # Simple sector classification for concentration-cap checks. Not GICS-precise,
@@ -91,12 +110,16 @@ SECTOR = {
     "AAPL": "tech", "MSFT": "tech", "GOOGL": "tech", "META": "tech", "NVDA": "tech",
     "AMD": "tech", "AVGO": "tech", "ORCL": "tech", "CRM": "tech", "NOW": "tech",
     "PANW": "tech", "SNOW": "tech", "NET": "tech", "DDOG": "tech", "SHOP": "tech",
-    "SHOP.TO": "tech",
+    "SHOP.TO": "tech", "CRDO": "tech", "ALAB": "tech",
     "JPM": "finance", "V": "finance", "MA": "finance",
     "RY.TO": "finance", "TD.TO": "finance", "BNS.TO": "finance", "BMO.TO": "finance",
     "XOM": "energy", "CVX": "energy", "CNQ.TO": "energy", "ENB.TO": "energy", "SU.TO": "energy",
+    "OKLO": "energy", "LEU": "energy", "SMR": "energy", "NNE": "energy", "ASPI": "energy",
+    "FLNC": "energy", "EOSE": "energy",
     "UNH": "healthcare", "LLY": "healthcare",
     "UBER": "industrial", "CP.TO": "industrial", "TRI.TO": "industrial",
+    "MOD": "industrial", "VRT": "industrial", "RKLB": "industrial", "ASTS": "industrial",
+    "LUNR": "industrial", "DRO": "industrial", "ONDS": "industrial",
     "AMZN": "consumer", "COST": "consumer", "HD": "consumer", "PG": "consumer", "ABNB": "consumer",
 }
 
@@ -312,11 +335,19 @@ class PaperAgent:
                 continue
 
             pos.high_water_mark = max(pos.high_water_mark, price)
-            pos.stop_price = pos.high_water_mark * (1 - RISK_TIERS[pos.tier]["stop_loss_pct"])
+            if pos.tier != "speculative":
+                pos.stop_price = pos.high_water_mark * (1 - RISK_TIERS[pos.tier]["stop_loss_pct"])
+            # Speculative's stop stays fixed at the entry-price floor set in
+            # _open() -- no trailing, so a name that runs hard doesn't get
+            # stopped out on a pullback that's still a big win ("let winners
+            # run"). high_water_mark is still tracked above for visibility.
 
             # A stop-loss must always be able to fire, no matter how fresh the
             # position is. The minimum-holding gate below only ever applies to
             # the trend-break exit, so normal day-1 noise can't shake us out.
+            # This applies to speculative's fixed stop too -- it can trigger
+            # even inside the minimum holding period, same as every other
+            # tier's stop-loss already does.
             reason = None
             if price <= pos.stop_price:
                 reason = "stop_loss"
@@ -396,7 +427,7 @@ class PaperAgent:
 
         counts = {tier: sum(1 for p in self.state.positions if p.tier == tier) for tier in RISK_TIERS}
 
-        for tier in ("core", "growth", "aggressive"):
+        for tier in ("core", "growth", "aggressive", "speculative"):
             for entry in results[tier]:
                 ticker = entry["ticker"]
                 if counts[tier] >= RISK_TIERS[tier]["max_positions"]:
@@ -478,7 +509,12 @@ class PaperAgent:
                     return False
 
         tier_val = self.tier_equity(tier, prices)
-        alloc = tier_val * self._position_size_pct(ticker, tier)
+        if tier == "speculative":
+            # Flat 2%-of-total-portfolio sizing, not tier-relative or
+            # volatility-scaled -- see SPECULATIVE_MAX_POSITION_PCT_OF_TOTAL.
+            alloc = self.total_equity(prices) * SPECULATIVE_MAX_POSITION_PCT_OF_TOTAL
+        else:
+            alloc = tier_val * self._position_size_pct(ticker, tier)
         commission = EXECUTION_ASSUMPTIONS["commission_per_trade"]
 
         sector = SECTOR.get(ticker, "other")
