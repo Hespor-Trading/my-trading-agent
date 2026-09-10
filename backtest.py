@@ -348,14 +348,27 @@ class YFinanceProvider(DataProvider):
             raise RuntimeError(f"No price data for {ticker} from yfinance")
         rows = []
         for date, row in df.iterrows():
+            close = float(row["Close"])
+            if close != close:  # NaN check (x != x is True only for NaN)
+                # Yahoo sometimes appends a still-forming "today" row with
+                # NaN OHLC/volume before that session's data is finalized
+                # (confirmed live: 17/18 held US tickers hit this on the
+                # same run). Drop it rather than let a NaN close silently
+                # poison total_equity (float + NaN = NaN, with no
+                # exception raised) or a moving-average/volatility calc
+                # downstream -- the row will show up with a real close
+                # once yfinance backfills it on a later run.
+                continue
             rows.append({
                 "date": date.strftime("%Y-%m-%d"),
                 "open": float(row["Open"]),
                 "high": float(row["High"]),
                 "low": float(row["Low"]),
-                "close": float(row["Close"]),
+                "close": close,
                 "volume": int(row["Volume"]),
             })
+        if not rows:
+            raise RuntimeError(f"No usable (non-NaN) price data for {ticker} from yfinance")
         return rows
 
     def get_earnings(self, ticker: str) -> list[dict]:

@@ -328,7 +328,11 @@ class PaperAgent:
             try:
                 rows = self.provider.get_daily_prices(t, "2024-01-01")
                 if rows:
-                    prices[t] = rows[-1]["close"]
+                    price = rows[-1]["close"]
+                    if price != price:  # NaN check -- see YFinanceProvider.get_daily_prices
+                        log(f"WARN {t} latest close came back NaN; skipping for this run")
+                        continue
+                    prices[t] = price
             except Exception as e:
                 log(f"WARN could not price {t}: {e}")
         return prices
