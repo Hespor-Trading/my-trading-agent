@@ -190,7 +190,7 @@
   "closed_trades": [],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-09 23:27:42 UTC",
+  "last_run": "2026-09-10 00:39:09 UTC",
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -363,27 +363,32 @@
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": 99393.79
+      "spy_benchmark": NaN
     },
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": 99393.79
+      "spy_benchmark": NaN
     },
     {
       "date": "2026-09-09",
       "equity": 99889.73429836657,
-      "spy_benchmark": 99393.79
+      "spy_benchmark": NaN
     },
     {
       "date": "2026-09-09",
       "equity": 99868.47422019845,
-      "spy_benchmark": 99393.79
+      "spy_benchmark": NaN
     },
     {
       "date": "2026-09-09",
       "equity": 99803.51090243427,
-      "spy_benchmark": 99393.79
+      "spy_benchmark": NaN
+    },
+    {
+      "date": "2026-09-10",
+      "equity": NaN,
+      "spy_benchmark": NaN
     }
   ]
 }
