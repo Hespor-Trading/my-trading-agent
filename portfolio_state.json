@@ -2,7 +2,7 @@
   "cash_by_tier": {
     "core": 23049.175550827185,
     "growth": 20143.06202179247,
-    "aggressive": 11711.576562547607,
+    "aggressive": 12148.42564196854,
     "speculative": 14983.84177842892
   },
   "positions": [
@@ -12,9 +12,9 @@
       "entry_price": 320.12998622131346,
       "entry_date": "2026-09-06",
       "shares": 8.50446303546849,
-      "stop_price": 300.92218704803463,
+      "stop_price": 306.97580688476563,
       "commission_paid": 1.0,
-      "high_water_mark": 320.12998622131346
+      "high_water_mark": 326.57000732421875
     },
     {
       "ticker": "MSFT",
@@ -42,9 +42,9 @@
       "entry_price": 160.74033366394042,
       "entry_date": "2026-09-08",
       "shares": 19.575750383680003,
-      "stop_price": 154.3761959838867,
+      "stop_price": 155.3161959838867,
       "commission_paid": 1.0,
-      "high_water_mark": 164.22999572753906
+      "high_water_mark": 165.22999572753906
     },
     {
       "ticker": "SNOW",
@@ -65,16 +65,6 @@
       "stop_price": 164.1496274858093,
       "commission_paid": 1.0,
       "high_water_mark": 174.62726328277586
-    },
-    {
-      "ticker": "VRT",
-      "tier": "aggressive",
-      "entry_price": 291.70247653198237,
-      "entry_date": "2026-09-09",
-      "shares": 1.7699051727574033,
-      "stop_price": 256.6981793481445,
-      "commission_paid": 1.0,
-      "high_water_mark": 291.70247653198237
     },
     {
       "ticker": "AMZN",
@@ -187,10 +177,22 @@
       "high_water_mark": 170.03858877563474
     }
   ],
-  "closed_trades": [],
+  "closed_trades": [
+    {
+      "ticker": "VRT",
+      "tier": "aggressive",
+      "entry_date": "2026-09-09",
+      "exit_date": "2026-09-10",
+      "entry_price": 291.70247653198237,
+      "exit_price": 247.38561486816405,
+      "shares": 1.7699051727574033,
+      "reason": "stop_loss",
+      "total_commission": 2.0
+    }
+  ],
   "peak_equity": 100000.0,
   "started_on": "2026-08-30 20:05:17 UTC",
-  "last_run": "2026-09-10 00:39:09 UTC",
+  "last_run": "2026-09-10 23:21:22 UTC",
   "fundamentals_cache": {
     "SU.TO": {
       "market_cap": 109974609920.0,
@@ -363,27 +365,32 @@
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": null
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": null
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99889.73429836657,
-      "spy_benchmark": null
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99868.47422019845,
-      "spy_benchmark": null
+      "spy_benchmark": 99393.79
     },
     {
       "date": "2026-09-09",
       "equity": 99803.51090243427,
-      "spy_benchmark": null
+      "spy_benchmark": 99393.79
+    },
+    {
+      "date": "2026-09-10",
+      "equity": 99694.76594640175,
+      "spy_benchmark": 98798.0
     }
   ]
 }
