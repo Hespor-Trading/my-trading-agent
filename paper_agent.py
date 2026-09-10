@@ -33,6 +33,7 @@ USAGE:
 
 import argparse
 import json
+import math
 import os
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
@@ -253,6 +254,27 @@ def load_state() -> PortfolioState:
     )
 
 
+def _json_safe(obj):
+    """Recursively replaces NaN/Infinity with None (-> JSON null).
+
+    Python's json module happily writes a literal NaN token by default
+    (allow_nan=True) -- valid to ITS OWN parser, but not valid JSON per
+    spec, which is exactly what breaks a browser's strict JSON.parse() on
+    the dashboard side (a single NaN anywhere in the file fails the
+    ENTIRE parse, not just the one bad field). This is the write-time
+    safety net: no matter what upstream computation produces a NaN (a bad
+    price, a division edge case, anything not yet anticipated), it can
+    never reach the committed state file as an invalid token again --
+    it becomes an explicit "unknown" (null) instead."""
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+    return obj
+
+
 def save_state(state: PortfolioState):
     payload = {
         "cash_by_tier": state.cash_by_tier,
@@ -264,9 +286,14 @@ def save_state(state: PortfolioState):
         "fundamentals_cache": state.fundamentals_cache,
         "equity_history": state.equity_history,
     }
+    payload = _json_safe(payload)
     tmp = STATE_FILE + ".tmp"
     with open(tmp, "w") as f:
-        json.dump(payload, f, indent=2)
+        # allow_nan=False is a backstop, not the fix: if _json_safe somehow
+        # missed something, this raises loudly (failing the run, keeping
+        # the last-known-good STATE_FILE via the os.replace() below never
+        # happening) instead of silently writing invalid JSON again.
+        json.dump(payload, f, indent=2, allow_nan=False)
     os.replace(tmp, STATE_FILE)
 
 

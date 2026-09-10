@@ -363,27 +363,27 @@
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": NaN
+      "spy_benchmark": null
     },
     {
       "date": "2026-09-09",
       "equity": 99892.27852285947,
-      "spy_benchmark": NaN
+      "spy_benchmark": null
     },
     {
       "date": "2026-09-09",
       "equity": 99889.73429836657,
-      "spy_benchmark": NaN
+      "spy_benchmark": null
     },
     {
       "date": "2026-09-09",
       "equity": 99868.47422019845,
-      "spy_benchmark": NaN
+      "spy_benchmark": null
     },
     {
       "date": "2026-09-09",
       "equity": 99803.51090243427,
-      "spy_benchmark": NaN
+      "spy_benchmark": null
     }
   ]
 }
